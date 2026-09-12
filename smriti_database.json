@@ -1,145 +1,406 @@
 {
-  "patientProfile": {
-    "name": "Ramesh Sharma",
-    "preferredName": "Ramesh",
-    "age": 72,
-    "gender": "Female",
-    "stage": "Mild Cognitive Impairment (Early Stage)",
-    "caregiverName": "Amit Sharma",
-    "caregiverRelation": "Son",
-    "emergencyPhone": "+91  9638527419",
-    "doctorName": "Family Physician",
-    "doctorPhone": "",
-    "homeAddress": "Home",
-    "notes": "New profile registered."
-  },
-  "caregiverProfile": {
-    "name": "Amit Sharma",
-    "relation": "Son",
-    "phone": "+91  9638527419",
-    "email": "",
-    "pin": "12345",
-    "notes": "Care journey initiated for Ramesh Sharma."
-  },
-  "caregiverPin": "12345",
-  "dailyRecords": [
+  "patients": [
     {
-      "date": "2026-09-05",
-      "displayDate": "Sep 6",
-      "weekday": "Sun",
-      "memoryScore": 75,
-      "sequencingScore": 80,
-      "recognitionScore": 85,
-      "gardenScore": 90,
-      "averageScore": 83,
-      "mood": "happy",
-      "gamesCompleted": 4,
-      "notesCount": 0
+      "id": "p_eleanor",
+      "name": "Eleanor Vance",
+      "preferredName": "Eleanor",
+      "age": 74,
+      "gender": "Female",
+      "stage": "Mild Cognitive Impairment (Early Stage)",
+      "avatar": "👵",
+      "caregiverName": "Sarah Vance",
+      "caregiverRelation": "Daughter & Primary Caregiver",
+      "emergencyPhone": "+1 (555) 382-9011",
+      "doctorName": "Dr. Arvind Mehta (Neurology)",
+      "doctorPhone": "+1 (555) 902-8811",
+      "homeAddress": "Greenwood Villa, Apt 4B",
+      "notes": "Loves morning chamomile tea and listening to 1960s acoustic melodies.",
+      "currentMood": "neutral",
+      "dailyRecords": [
+        {
+          "date": "2026-09-06",
+          "displayDate": "Sep 6",
+          "weekday": "Sun",
+          "memoryScore": 75,
+          "sequencingScore": 80,
+          "recognitionScore": 85,
+          "gardenScore": 90,
+          "averageScore": 83,
+          "mood": "happy",
+          "gamesCompleted": 4,
+          "notesCount": 0
+        },
+        {
+          "date": "2026-09-07",
+          "displayDate": "Sep 7",
+          "weekday": "Mon",
+          "memoryScore": 70,
+          "sequencingScore": 85,
+          "recognitionScore": 80,
+          "gardenScore": 85,
+          "averageScore": 80,
+          "mood": "calm",
+          "gamesCompleted": 4,
+          "notesCount": 0
+        },
+        {
+          "date": "2026-09-08",
+          "displayDate": "Sep 8",
+          "weekday": "Tue",
+          "memoryScore": 80,
+          "sequencingScore": 75,
+          "recognitionScore": 90,
+          "gardenScore": 95,
+          "averageScore": 85,
+          "mood": "happy",
+          "gamesCompleted": 4,
+          "notesCount": 0
+        },
+        {
+          "date": "2026-09-09",
+          "displayDate": "Sep 9",
+          "weekday": "Wed",
+          "memoryScore": 85,
+          "sequencingScore": 90,
+          "recognitionScore": 85,
+          "gardenScore": 90,
+          "averageScore": 88,
+          "mood": "calm",
+          "gamesCompleted": 4,
+          "notesCount": 0
+        },
+        {
+          "date": "2026-09-10",
+          "displayDate": "Sep 10",
+          "weekday": "Thu",
+          "memoryScore": 80,
+          "sequencingScore": 85,
+          "recognitionScore": 95,
+          "gardenScore": 100,
+          "averageScore": 90,
+          "mood": "happy",
+          "gamesCompleted": 4,
+          "notesCount": 0
+        },
+        {
+          "date": "2026-09-11",
+          "displayDate": "Sep 11",
+          "weekday": "Fri",
+          "memoryScore": 85,
+          "sequencingScore": 90,
+          "recognitionScore": 90,
+          "gardenScore": 95,
+          "averageScore": 90,
+          "mood": "neutral",
+          "gamesCompleted": 4,
+          "notesCount": 0
+        },
+        {
+          "date": "2026-09-12",
+          "displayDate": "Sep 12",
+          "weekday": "Sat",
+          "memoryScore": null,
+          "sequencingScore": null,
+          "recognitionScore": null,
+          "gardenScore": null,
+          "averageScore": 0,
+          "mood": "happy",
+          "gamesCompleted": 0,
+          "notesCount": 1
+        }
+      ],
+      "notesList": [
+        {
+          "id": 101,
+          "time": "Today, 10:30 AM",
+          "text": "Eleanor had a bright morning! Completed routine steps and remembered her glasses placement with minimal cues.",
+          "tags": [
+            "Medication Taken",
+            "Hydrated"
+          ]
+        },
+        {
+          "id": 102,
+          "time": "Yesterday, 04:15 PM",
+          "text": "Enjoyed the focus garden flower game for 10 minutes. Calmed down nicely before afternoon tea.",
+          "tags": [
+            "Calm Mood"
+          ]
+        }
+      ]
     },
     {
-      "date": "2026-09-06",
-      "displayDate": "Sep 7",
-      "weekday": "Mon",
-      "memoryScore": 70,
-      "sequencingScore": 85,
-      "recognitionScore": 80,
-      "gardenScore": 85,
-      "averageScore": 80,
-      "mood": "calm",
-      "gamesCompleted": 4,
-      "notesCount": 0
+      "id": "p_ramesh",
+      "name": "Ramesh Sharma",
+      "preferredName": "Ramesh",
+      "age": 72,
+      "gender": "Male",
+      "stage": "Mild Memory Loss & Attention Fatigue",
+      "avatar": "👴",
+      "caregiverName": "Sarah Vance",
+      "caregiverRelation": "Care Specialist",
+      "emergencyPhone": "+91 96385 27419",
+      "doctorName": "Dr. Sunita Rao (Geriatrics)",
+      "doctorPhone": "+91 98201 55432",
+      "homeAddress": "Shanti Nivas, Flat 201, Delhi",
+      "notes": "Enjoys morning prayer mantras and reminiscing about mathematics teaching days.",
+      "currentMood": "calm",
+      "dailyRecords": [
+        {
+          "date": "2026-09-06",
+          "displayDate": "Sep 6",
+          "weekday": "Sun",
+          "memoryScore": 65,
+          "sequencingScore": 70,
+          "recognitionScore": 75,
+          "gardenScore": 80,
+          "averageScore": 73,
+          "mood": "calm",
+          "gamesCompleted": 4,
+          "notesCount": 0
+        },
+        {
+          "date": "2026-09-07",
+          "displayDate": "Sep 7",
+          "weekday": "Mon",
+          "memoryScore": 70,
+          "sequencingScore": 75,
+          "recognitionScore": 80,
+          "gardenScore": 85,
+          "averageScore": 78,
+          "mood": "happy",
+          "gamesCompleted": 4,
+          "notesCount": 0
+        },
+        {
+          "date": "2026-09-08",
+          "displayDate": "Sep 8",
+          "weekday": "Tue",
+          "memoryScore": 75,
+          "sequencingScore": 70,
+          "recognitionScore": 80,
+          "gardenScore": 80,
+          "averageScore": 76,
+          "mood": "calm",
+          "gamesCompleted": 4,
+          "notesCount": 0
+        },
+        {
+          "date": "2026-09-09",
+          "displayDate": "Sep 9",
+          "weekday": "Wed",
+          "memoryScore": 70,
+          "sequencingScore": 80,
+          "recognitionScore": 85,
+          "gardenScore": 90,
+          "averageScore": 81,
+          "mood": "happy",
+          "gamesCompleted": 4,
+          "notesCount": 0
+        },
+        {
+          "date": "2026-09-10",
+          "displayDate": "Sep 10",
+          "weekday": "Thu",
+          "memoryScore": 80,
+          "sequencingScore": 85,
+          "recognitionScore": 85,
+          "gardenScore": 90,
+          "averageScore": 85,
+          "mood": "neutral",
+          "gamesCompleted": 4,
+          "notesCount": 0
+        },
+        {
+          "date": "2026-09-11",
+          "displayDate": "Sep 11",
+          "weekday": "Fri",
+          "memoryScore": 75,
+          "sequencingScore": 80,
+          "recognitionScore": 90,
+          "gardenScore": 85,
+          "averageScore": 83,
+          "mood": "happy",
+          "gamesCompleted": 4,
+          "notesCount": 0
+        },
+        {
+          "date": "2026-09-12",
+          "displayDate": "Sep 12",
+          "weekday": "Sat",
+          "memoryScore": null,
+          "sequencingScore": null,
+          "recognitionScore": null,
+          "gardenScore": null,
+          "averageScore": 0,
+          "mood": "happy",
+          "gamesCompleted": 0,
+          "notesCount": 1
+        }
+      ],
+      "notesList": [
+        {
+          "id": 201,
+          "time": "Today, 09:15 AM",
+          "text": "Ramesh engaged actively with the Daily Essentials match game. Showed high enthusiasm for classical items.",
+          "tags": [
+            "Good Mood",
+            "Breakfast Done"
+          ]
+        }
+      ]
     },
     {
-      "date": "2026-09-07",
-      "displayDate": "Sep 8",
-      "weekday": "Tue",
-      "memoryScore": 80,
-      "sequencingScore": 75,
-      "recognitionScore": 90,
-      "gardenScore": 95,
-      "averageScore": 85,
-      "mood": "happy",
-      "gamesCompleted": 4,
-      "notesCount": 0
-    },
-    {
-      "date": "2026-09-08",
-      "displayDate": "Sep 9",
-      "weekday": "Wed",
-      "memoryScore": 85,
-      "sequencingScore": 90,
-      "recognitionScore": 85,
-      "gardenScore": 90,
-      "averageScore": 88,
-      "mood": "calm",
-      "gamesCompleted": 4,
-      "notesCount": 0
-    },
-    {
-      "date": "2026-09-09",
-      "displayDate": "Sep 10",
-      "weekday": "Thu",
-      "memoryScore": 80,
-      "sequencingScore": 85,
-      "recognitionScore": 95,
-      "gardenScore": 100,
-      "averageScore": 90,
-      "mood": "happy",
-      "gamesCompleted": 4,
-      "notesCount": 0
-    },
-    {
-      "date": "2026-09-10",
-      "displayDate": "Sep 11",
-      "weekday": "Fri",
-      "memoryScore": 85,
-      "sequencingScore": 90,
-      "recognitionScore": 90,
-      "gardenScore": 95,
-      "averageScore": 90,
-      "mood": "neutral",
-      "gamesCompleted": 4,
-      "notesCount": 0
-    },
-    {
-      "date": "2026-09-11",
-      "displayDate": "Sep 12",
-      "weekday": "Sat",
-      "memoryScore": 76,
-      "sequencingScore": 95,
-      "recognitionScore": 95,
-      "gardenScore": 100,
-      "averageScore": 92,
-      "mood": "calm",
-      "gamesCompleted": 4,
-      "notesCount": 1
-    },
-    {
-      "date": "2026-09-12",
-      "displayDate": "Sep 12",
-      "weekday": "Sat",
-      "memoryScore": null,
-      "sequencingScore": null,
-      "recognitionScore": 33,
-      "gardenScore": null,
-      "averageScore": 33,
-      "mood": "calm",
-      "gamesCompleted": 1
-    }
-  ],
-  "caregiverNotes": [
-    {
-      "id": 1789161226768,
-      "time": "Today, Just now",
-      "text": "Welcome! Profile registered for Ramesh. Daily cognitive companion routines initialized.",
-      "tags": [
-        "Profile Setup",
-        "Care Started"
+      "id": "p_kamala",
+      "name": "mummy",
+      "preferredName": "mummy",
+      "age": 68,
+      "gender": "Female",
+      "stage": "",
+      "avatar": "🌸",
+      "caregiverName": "Sarah Vance",
+      "caregiverRelation": "Lead Care Coordinator & Family OT",
+      "emergencyPhone": "+1 (555) 382-9011",
+      "doctorName": "Dr. K. S. Verma (Physician)",
+      "doctorPhone": "+91 98712 34567",
+      "homeAddress": "Lotus Court, 12B, Bangalore",
+      "notes": "Responds warmly to flower garden colors and Hindustani classical music.",
+      "currentMood": "calm",
+      "dailyRecords": [
+        {
+          "date": "2026-09-06",
+          "displayDate": "Sep 6",
+          "weekday": "Sun",
+          "memoryScore": 80,
+          "sequencingScore": 75,
+          "recognitionScore": 85,
+          "gardenScore": 95,
+          "averageScore": 84,
+          "mood": "happy",
+          "gamesCompleted": 4,
+          "notesCount": 0
+        },
+        {
+          "date": "2026-09-07",
+          "displayDate": "Sep 7",
+          "weekday": "Mon",
+          "memoryScore": 85,
+          "sequencingScore": 80,
+          "recognitionScore": 90,
+          "gardenScore": 90,
+          "averageScore": 86,
+          "mood": "calm",
+          "gamesCompleted": 4,
+          "notesCount": 0
+        },
+        {
+          "date": "2026-09-08",
+          "displayDate": "Sep 8",
+          "weekday": "Tue",
+          "memoryScore": 80,
+          "sequencingScore": 85,
+          "recognitionScore": 85,
+          "gardenScore": 95,
+          "averageScore": 86,
+          "mood": "happy",
+          "gamesCompleted": 4,
+          "notesCount": 0
+        },
+        {
+          "date": "2026-09-09",
+          "displayDate": "Sep 9",
+          "weekday": "Wed",
+          "memoryScore": 85,
+          "sequencingScore": 80,
+          "recognitionScore": 90,
+          "gardenScore": 100,
+          "averageScore": 89,
+          "mood": "calm",
+          "gamesCompleted": 4,
+          "notesCount": 0
+        },
+        {
+          "date": "2026-09-10",
+          "displayDate": "Sep 10",
+          "weekday": "Thu",
+          "memoryScore": 90,
+          "sequencingScore": 85,
+          "recognitionScore": 95,
+          "gardenScore": 95,
+          "averageScore": 91,
+          "mood": "happy",
+          "gamesCompleted": 4,
+          "notesCount": 0
+        },
+        {
+          "date": "2026-09-11",
+          "displayDate": "Sep 11",
+          "weekday": "Fri",
+          "memoryScore": 85,
+          "sequencingScore": 90,
+          "recognitionScore": 90,
+          "gardenScore": 100,
+          "averageScore": 91,
+          "mood": "happy",
+          "gamesCompleted": 4,
+          "notesCount": 0
+        },
+        {
+          "date": "2026-09-12",
+          "displayDate": "Sep 12",
+          "weekday": "Sat",
+          "memoryScore": null,
+          "sequencingScore": null,
+          "recognitionScore": null,
+          "gardenScore": null,
+          "averageScore": 0,
+          "mood": "happy",
+          "gamesCompleted": 0,
+          "notesCount": 1
+        }
+      ],
+      "notesList": [
+        {
+          "id": 301,
+          "time": "Yesterday, 06:00 PM",
+          "text": "Completed sequencing steps for evening tea routine with gentle encouragement.",
+          "tags": [
+            "Sensory Calm"
+          ]
+        }
       ]
     }
   ],
-  "todayMood": "calm",
-  "userRole": "caregiver",
+  "caregivers": [
+    {
+      "id": "cg_sarah",
+      "name": "Sarah Vance",
+      "email": "sarah.vance@carefamily.org",
+      "password": "password123",
+      "role": "Lead Care Coordinator & Family OT",
+      "phone": "+1 (555) 382-9011",
+      "assignedPatientIds": [
+        "p_eleanor",
+        "p_ramesh",
+        "p_kamala"
+      ]
+    },
+    {
+      "id": "cg_amit",
+      "name": "Amit Sharma",
+      "email": "amit.sharma@smriti.care",
+      "password": "password123",
+      "role": "Family Caregiver",
+      "phone": "+91 96385 27419",
+      "assignedPatientIds": [
+        "p_ramesh"
+      ]
+    }
+  ],
+  "activePatientId": "p_kamala",
+  "currentCaregiverId": "cg_sarah",
+  "userRole": "patient",
+  "currentPortal": "caregiver",
   "communityContributions": [
     {
       "id": 1789161336223,
@@ -186,5 +447,5 @@
       "content": "Available for 15-minute soothing video calls or tele-poetry reading for patients feeling lonely during late afternoons."
     }
   ],
-  "lastSaved": "2026-09-12T03:21:39.870Z"
+  "lastSaved": "2026-09-12T05:33:46.577Z"
 }

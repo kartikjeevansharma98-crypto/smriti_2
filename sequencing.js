@@ -133,23 +133,13 @@ class SequencingGame {
     this.container.innerHTML = `
       <div class="game-arena">
         <div class="game-instruction-banner">
-          <div class="game-instruction-text" style="display:flex; align-items:center; gap:8px;">
-            <svg class="icon-svg" style="width:20px;height:20px;color:var(--primary);" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-            <span>${r.title} (${r.steps.length} Steps)</span>
+          <div class="game-instruction-text">
+            <span>📋 ${r.title} (${r.steps.length} Steps)</span>
           </div>
           <div style="display:flex; gap:8px;">
-            <button class="read-btn" id="seq-speak-btn" style="display:flex; align-items:center; gap:4px;">
-              <svg class="icon-svg" style="width:14px;height:14px;" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-              Read
-            </button>
-            <button class="read-btn" id="seq-hint-btn" style="background:#FAF4EA; border-color:rgba(184,82,65,0.3); color:#B85241; display:flex; align-items:center; gap:4px;">
-              <svg class="icon-svg" style="width:14px;height:14px;" viewBox="0 0 24 24"><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-              Hint
-            </button>
-            <button class="read-btn" id="seq-switch-btn" style="background:#FAF4EA; border-color:rgba(184,82,65,0.3); color:#B85241; display:flex; align-items:center; gap:4px;">
-              <svg class="icon-svg" style="width:14px;height:14px;" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-              New Routine
-            </button>
+            <button class="read-btn" id="seq-speak-btn">🔊 Read</button>
+            <button class="read-btn" id="seq-hint-btn" style="background:#fef3c7; border-color:#fde047; color:#92400e;">💡 Hint</button>
+            <button class="read-btn" id="seq-switch-btn" style="background:#eff6ff; border-color:#93c5fd; color:#1d4ed8;">🔀 New Routine</button>
           </div>
         </div>
 

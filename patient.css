@@ -16,75 +16,72 @@
 
 /* Patient Hero Card */
 .patient-hero {
-  background: linear-gradient(135deg, #FAF4EA 0%, #FFF7ED 100%);
+  background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
   border-radius: var(--radius-lg);
   padding: 32px 36px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border: 1.5px solid rgba(184, 82, 65, 0.22);
-  box-shadow: 0 4px 20px rgba(184, 82, 65, 0.06);
+  border: 2px solid #bfdbfe;
+  box-shadow: var(--shadow-md);
   position: relative;
   overflow: hidden;
 }
 
 .patient-hero::after {
-  content: "";
+  content: "🌻";
   position: absolute;
-  right: -40px;
-  bottom: -40px;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(184,82,65,0.08) 0%, rgba(255,255,255,0) 70%);
-  border-radius: 50%;
+  right: 18px;
+  bottom: -20px;
+  font-size: 130px;
+  opacity: 0.15;
   pointer-events: none;
 }
 
 .patient-hero-content h2 {
   font-size: 2.2rem;
-  color: #1C1B1A;
-  font-weight: 800;
+  color: #1e3a8a;
+  font-weight: 700;
   margin-bottom: 8px;
 }
 
 .patient-hero-content p {
-  font-size: 1.15rem;
-  color: #555452;
+  font-size: 1.25rem;
+  color: #1e40af;
   font-weight: 500;
   max-width: 580px;
-  line-height: 1.5;
 }
 
 .patient-date-badge {
-  background: #FAF4EA;
-  padding: 14px 24px;
+  background: #ffffff;
+  padding: 12px 24px;
   border-radius: var(--radius-md);
-  box-shadow: 0 2px 10px rgba(28, 27, 26, 0.05);
+  box-shadow: var(--shadow-sm);
   text-align: center;
-  border: 1.5px solid rgba(184, 82, 65, 0.25);
+  border: 1px solid #bfdbfe;
   min-width: 180px;
 }
 
 .patient-date-badge .day-name {
-  font-size: 1.45rem;
-  font-weight: 800;
-  color: #B85241;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #2563eb;
   text-transform: capitalize;
 }
 
 .patient-date-badge .full-date {
-  font-size: 0.92rem;
-  color: #555452;
+  font-size: 0.95rem;
+  color: #4b5563;
   font-weight: 500;
 }
 
 /* Mood Check-in Section */
 .mood-checkin-card {
-  background: #FAF4EA;
+  background: #ffffff;
   border-radius: var(--radius-lg);
   padding: 28px 32px;
-  border: 1.5px solid rgba(184, 82, 65, 0.18);
-  box-shadow: 0 4px 16px rgba(28, 27, 26, 0.04);
+  border: 2px solid #e5e7eb;
+  box-shadow: var(--shadow-sm);
 }
 
 .mood-title-area {
@@ -95,22 +92,22 @@
 }
 
 .mood-title-area h3 {
-  font-size: 1.45rem;
-  color: #1C1B1A;
-  font-weight: 800;
+  font-size: 1.5rem;
+  color: #111827;
+  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
 .read-btn {
-  background: #FAF4EA;
-  border: 1.5px solid rgba(184, 82, 65, 0.3);
-  color: #B85241;
-  padding: 8px 18px;
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  color: #166534;
+  padding: 8px 16px;
   border-radius: var(--radius-full);
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -119,9 +116,8 @@
 }
 
 .read-btn:hover {
-  background: #FFF7ED;
-  border-color: #B85241;
-  transform: translateY(-1px);
+  background: #dcfce7;
+  transform: scale(1.03);
 }
 
 .mood-options-grid {
@@ -131,8 +127,8 @@
 }
 
 .mood-btn {
-  background: #FFFDF9;
-  border: 1.5px solid rgba(184, 82, 65, 0.18);
+  background: #f9fafb;
+  border: 2.5px solid #e5e7eb;
   border-radius: var(--radius-md);
   padding: 18px 12px;
   display: flex;
@@ -149,26 +145,21 @@
 }
 
 .mood-btn .mood-label {
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   font-weight: 600;
-  color: #1C1B1A;
+  color: #374151;
 }
 
 .mood-btn:hover {
-  background: #FFF7ED;
-  border-color: #B85241;
-  transform: translateY(-2px);
+  background: #f0fdfa;
+  border-color: #5eead4;
+  transform: translateY(-3px);
 }
 
 .mood-btn.selected {
-  background: #FFF7ED;
-  border: 2.5px solid #B85241;
-  box-shadow: 0 0 0 4px rgba(184, 82, 65, 0.18);
-}
-
-.mood-btn.selected .mood-label {
-  color: #B85241;
-  font-weight: 800;
+  background: #ecfdf5;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
 .mood-btn.selected .mood-emoji {
@@ -184,17 +175,17 @@
 }
 
 .section-headline h3 {
-  font-size: 1.55rem;
-  font-weight: 800;
-  color: #1C1B1A;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #0f172a;
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
 .section-headline span {
-  font-size: 0.95rem;
-  color: #555452;
+  font-size: 1.1rem;
+  color: #64748b;
   font-weight: 500;
 }
 
@@ -206,23 +197,23 @@
 }
 
 .game-card {
-  background: #FAF4EA;
-  border: 1.5px solid rgba(184, 82, 65, 0.18);
+  background: #ffffff;
+  border: 2.5px solid #e2e8f0;
   border-radius: var(--radius-lg);
-  padding: 26px 22px;
+  padding: 28px 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  box-shadow: 0 4px 16px rgba(28, 27, 26, 0.04);
+  gap: 18px;
+  box-shadow: var(--shadow-sm);
   transition: var(--transition);
   position: relative;
   cursor: pointer;
 }
 
 .game-card:hover {
-  border-color: #B85241;
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(184, 82, 65, 0.12);
+  border-color: #3b82f6;
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
 }
 
 .game-card-header {
@@ -239,28 +230,26 @@
   align-items: center;
   justify-content: center;
   font-size: 32px;
-  box-shadow: 0 4px 12px rgba(28, 27, 26, 0.06);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
-.game-icon-box.memory { background: #FFF0ED; color: #B85241; border: 1px solid rgba(184,82,65,0.2); }
-.game-icon-box.sequencing { background: #FDF0E6; color: #C4763C; border: 1px solid rgba(196,118,60,0.2); }
-.game-icon-box.recognition { background: #FBF3E0; color: #8B6914; border: 1px solid rgba(139,105,20,0.2); }
-.game-icon-box.garden { background: #EFF6E8; color: #5B8C3E; border: 1px solid rgba(91,140,62,0.2); }
+.game-icon-box.memory { background: linear-gradient(135deg, #fee2e2, #fecaca); color: #dc2626; }
+.game-icon-box.sequencing { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #2563eb; }
+.game-icon-box.recognition { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #d97706; }
+.game-icon-box.garden { background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #059669; }
 
 .game-status-pill {
   padding: 6px 14px;
   border-radius: var(--radius-full);
-  font-size: 0.82rem;
-  font-weight: 700;
-  background: #FFF7ED;
-  color: #B85241;
-  border: 1px solid rgba(184, 82, 65, 0.22);
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #475569;
 }
 
 .game-status-pill.done {
-  background: #EFF6E8;
-  color: #5B8C3E;
-  border: 1px solid rgba(91, 140, 62, 0.25);
+  background: #dcfce7;
+  color: #15803d;
 }
 
 .game-card-content h4 {
@@ -696,243 +685,4 @@
   0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
   70% { transform: scale(1.08); box-shadow: 0 0 0 16px rgba(16, 185, 129, 0); }
   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-}
-
-/* Memory Game Config & Modal Styles */
-.mem-config-wrapper {
-  max-width: 740px;
-  margin: 16px auto;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  text-align: center;
-}
-
-.mem-config-header h3 {
-  color: var(--text-primary, #1C1B1A);
-  font-size: 1.5rem;
-  font-weight: 800;
-  margin-bottom: 6px;
-}
-
-.mem-config-header p {
-  color: var(--text-secondary, #555452);
-  font-size: 1rem;
-}
-
-.mem-modes-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.mem-mode-card {
-  background: var(--bg-card, #FAF4EA);
-  border: 2px solid var(--border-strong, rgba(184,82,65,0.25));
-  border-radius: 18px;
-  padding: 20px 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  color: var(--text-primary, #1C1B1A);
-}
-
-.mem-mode-card:hover {
-  border-color: var(--primary, #B85241);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(184,82,65,0.15);
-}
-
-.mem-mode-card.active {
-  background: #FFF7ED;
-  border: 2.5px solid var(--primary, #B85241);
-  box-shadow: 0 0 0 4px rgba(184,82,65,0.18);
-}
-
-.mem-mode-icon-badge {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: rgba(184,82,65,0.1);
-  color: var(--primary, #B85241);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 4px;
-}
-
-.mem-mode-title {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--text-primary, #1C1B1A);
-}
-
-.mem-mode-desc {
-  font-size: 0.88rem;
-  color: var(--text-secondary, #555452);
-  line-height: 1.35;
-}
-
-.mem-level-section {
-  margin-top: 6px;
-}
-
-.mem-level-label {
-  font-weight: 700;
-  color: var(--text-primary, #1C1B1A);
-  font-size: 1.05rem;
-  margin-bottom: 12px;
-}
-
-.mem-levels-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-
-.mem-level-card {
-  background: var(--bg-card, #FAF4EA);
-  border: 2px solid var(--border, rgba(184,82,65,0.2));
-  border-radius: 14px;
-  padding: 14px 10px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  transition: all 0.2s ease;
-}
-
-.mem-level-card:hover {
-  border-color: var(--primary, #B85241);
-  background: #FFFBF5;
-}
-
-.mem-level-card.active {
-  background: var(--primary, #B85241);
-  border-color: var(--primary, #B85241);
-  box-shadow: 0 4px 12px rgba(184,82,65,0.25);
-}
-
-.mem-level-card.active .mem-level-num,
-.mem-level-card.active .mem-level-sub {
-  color: #FFFFFF !important;
-}
-
-.mem-level-num {
-  font-weight: 800;
-  color: var(--primary, #B85241);
-  font-size: 1.05rem;
-}
-
-.mem-level-sub {
-  font-size: 0.8rem;
-  color: var(--text-secondary, #555452);
-}
-
-/* High Contrast Patient Overrides */
-body.high-contrast .patient-hero {
-  background: linear-gradient(135deg, #2D2D2D 0%, #222222 100%) !important;
-  border: 2px solid #E8694F !important;
-}
-
-body.high-contrast .patient-hero-content h2 {
-  color: #FFFFFF !important;
-}
-
-body.high-contrast .patient-hero-content p {
-  color: #E0E0E0 !important;
-}
-
-body.high-contrast .patient-date-badge {
-  background: #333333 !important;
-  border: 1.5px solid #E8694F !important;
-}
-
-body.high-contrast .patient-date-badge .day-name {
-  color: #E8694F !important;
-}
-
-body.high-contrast .patient-date-badge .full-date {
-  color: #CCCCCC !important;
-}
-
-body.high-contrast .mood-checkin-card {
-  background: #2A2A2A !important;
-  border: 2px solid rgba(232, 105, 79, 0.4) !important;
-}
-
-body.high-contrast .mood-title-area h3 {
-  color: #FFFFFF !important;
-}
-
-body.high-contrast .read-btn {
-  background: #382A26 !important;
-  border: 1.5px solid #E8694F !important;
-  color: #E8694F !important;
-}
-
-body.high-contrast .mood-btn {
-  background: #333333 !important;
-  border: 2px solid #444444 !important;
-}
-
-body.high-contrast .mood-btn .mood-label {
-  color: #FFFFFF !important;
-}
-
-body.high-contrast .mood-btn.selected {
-  background: #382A26 !important;
-  border-color: #E8694F !important;
-  box-shadow: 0 0 0 4px rgba(232, 105, 79, 0.4) !important;
-}
-
-body.high-contrast .mood-btn.selected .mood-label {
-  color: #E8694F !important;
-}
-
-body.high-contrast .section-headline h3 {
-  color: #FFFFFF !important;
-}
-
-body.high-contrast .section-headline span {
-  color: #CCCCCC !important;
-}
-
-body.high-contrast .game-card {
-  background: #2A2A2A !important;
-  border: 2px solid #444444 !important;
-}
-
-body.high-contrast .game-card-content h4 {
-  color: #FFFFFF !important;
-}
-
-body.high-contrast .game-card-content p {
-  color: #CCCCCC !important;
-}
-
-body.high-contrast .game-card:hover {
-  border-color: #E8694F !important;
-  box-shadow: 0 8px 24px rgba(232, 105, 79, 0.2) !important;
-}
-
-body.high-contrast .game-status-pill {
-  background: #382A26 !important;
-  color: #E8694F !important;
-  border: 1px solid #E8694F !important;
-}
-
-body.high-contrast .game-status-pill.done {
-  background: #223826 !important;
-  color: #8CFF9E !important;
-  border: 1px solid #3BE85D !important;
-}
-
-body.high-contrast .floating-support-btn {
-  background: #E8694F !important;
-  color: #FFFFFF !important;
 }

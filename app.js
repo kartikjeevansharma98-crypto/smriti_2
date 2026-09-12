@@ -52,10 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
     setupCaregiverDashboard();
     setupProfileManagement();
     setupChatbotAssistant();
-    setupSarvamVoiceAssistant();
     setupNewUserWizard();
     setupCommunityHub();
     setupAccessibilityControls();
+    setupFamilyPhotos();
     listenForDataUpdates();
 
     // Initial greeting voice cue
@@ -72,6 +72,173 @@ document.addEventListener('DOMContentLoaded', () => {
         window.smritiSpeech.speak(`${timeGreeting}, ${patient.preferredName}! Welcome to your daily activities.`);
       }
     }, 600);
+  }
+
+  /* ---------------------------------------------------------
+     Family Photos — Upload (Caretaker) & Gallery (Patient)
+     --------------------------------------------------------- */
+  function setupFamilyPhotos() {
+    const fileInput = document.getElementById('cg-photo-file-input');
+    const dropzone = document.getElementById('cg-photos-dropzone');
+    const browseBtn = document.getElementById('btn-browse-photos');
+    const captionInput = document.getElementById('cg-photo-caption-input');
+    const uploadedGrid = document.getElementById('cg-uploaded-photos-grid');
+    const emptyState = document.getElementById('cg-photos-empty-state');
+    const countBadge = document.getElementById('cg-photos-count-badge');
+    const patientLabel = document.getElementById('cg-photos-patient-label');
+
+    // Patient view elements
+    const patientGrid = document.getElementById('family-photos-grid');
+    const patientEmpty = document.getElementById('family-photos-empty');
+
+    // --- CARETAKER UPLOAD PANEL ---
+
+    if (browseBtn && fileInput) {
+      browseBtn.addEventListener('click', () => fileInput.click());
+    }
+
+    if (dropzone && fileInput) {
+      dropzone.addEventListener('click', (e) => {
+        if (e.target !== browseBtn) fileInput.click();
+      });
+
+      dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('drag-over');
+      });
+      dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+      dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('drag-over');
+        handleFiles(e.dataTransfer.files);
+      });
+    }
+
+    if (fileInput) {
+      fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+    }
+
+    function handleFiles(files) {
+      const caption = captionInput ? captionInput.value.trim() : '';
+      const caretaker = window.smritiData.getCurrentCaregiver();
+      const caretakerName = caretaker ? caretaker.name : 'Caretaker';
+      const patientId = window.smritiData.getActivePatientId();
+
+      Array.from(files).forEach(file => {
+        if (!file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          window.smritiData.addFamilyPhoto({
+            dataUrl: e.target.result,
+            caption: caption,
+            uploadedBy: caretakerName
+          }, patientId);
+          if (captionInput) captionInput.value = '';
+          if (fileInput) fileInput.value = '';
+          renderCgPhotos();
+          renderPatientPhotos();
+          showToast(`📸 Photo uploaded successfully!`);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderCgPhotos() {
+      const patient = window.smritiData.getActivePatient();
+      const photos = window.smritiData.getFamilyPhotos();
+
+      if (patientLabel) patientLabel.textContent = `For ${patient ? patient.preferredName : 'patient'}`;
+      if (countBadge) countBadge.textContent = `${photos.length} photo${photos.length !== 1 ? 's' : ''}`;
+
+      if (!uploadedGrid) return;
+      if (photos.length === 0) {
+        uploadedGrid.innerHTML = '';
+        if (emptyState) emptyState.style.display = 'block';
+        return;
+      }
+      if (emptyState) emptyState.style.display = 'none';
+
+      uploadedGrid.innerHTML = photos.map(photo => `
+        <div class="cg-uploaded-photo-thumb" title="${photo.caption || 'Family photo'}">
+          <img src="${photo.dataUrl}" alt="${photo.caption || 'Family photo'}" loading="lazy">
+          ${photo.caption ? `<div class="cg-photo-caption-label">${photo.caption}</div>` : ''}
+          <button class="cg-photo-delete-btn" data-photoid="${photo.id}" title="Remove photo">✕</button>
+        </div>
+      `).join('');
+
+      uploadedGrid.querySelectorAll('.cg-photo-delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const photoId = btn.dataset.photoid;
+          window.smritiData.removeFamilyPhoto(photoId);
+          renderCgPhotos();
+          renderPatientPhotos();
+          showToast('Photo removed.');
+        });
+      });
+    }
+
+    // --- PATIENT VIEW GALLERY ---
+
+    function renderPatientPhotos() {
+      const photos = window.smritiData.getFamilyPhotos();
+      if (!patientGrid) return;
+
+      if (photos.length === 0) {
+        patientGrid.innerHTML = '';
+        if (patientEmpty) patientEmpty.style.display = 'block';
+        return;
+      }
+      if (patientEmpty) patientEmpty.style.display = 'none';
+
+      patientGrid.innerHTML = photos.map(photo => `
+        <div class="family-photo-card" data-photoid="${photo.id}" data-url="${photo.dataUrl}" data-caption="${photo.caption || ''}">
+          <img src="${photo.dataUrl}" alt="${photo.caption || 'Family photo'}" loading="lazy">
+          <div class="family-photo-caption">${photo.caption || '❤️ Family'}</div>
+          <div class="family-photo-date">📅 ${photo.uploadedAt}</div>
+        </div>
+      `).join('');
+
+      patientGrid.querySelectorAll('.family-photo-card').forEach(card => {
+        card.addEventListener('click', () => openLightbox(card.dataset.url, card.dataset.caption));
+      });
+    }
+
+    // Lightbox for patient
+    function openLightbox(url, caption) {
+      const existing = document.getElementById('photo-lightbox-overlay');
+      if (existing) existing.remove();
+
+      const lb = document.createElement('div');
+      lb.id = 'photo-lightbox-overlay';
+      lb.className = 'photo-lightbox';
+      lb.innerHTML = `
+        <div class="photo-lightbox-close" id="lb-close">✕</div>
+        <img src="${url}" alt="${caption || 'Family photo'}">
+        ${caption ? `<div class="photo-lightbox-caption">💖 ${caption}</div>` : ''}
+      `;
+      document.body.appendChild(lb);
+
+      lb.addEventListener('click', () => lb.remove());
+      document.getElementById('lb-close').addEventListener('click', () => lb.remove());
+
+      // Simran voice reads the caption
+      if (caption && window.smritiSpeech) {
+        const isHi = window.smritiI18n && window.smritiI18n.getLanguage() === 'hi';
+        const msg = isHi ? `यह है आपकी पारिवारिक फोटो। ${caption}` : `Family photo: ${caption}`;
+        window.smritiSpeech.speak(msg);
+      }
+    }
+
+    // Sync when patient switches
+    window.addEventListener('smriti_photos_updated', () => {
+      renderCgPhotos();
+      renderPatientPhotos();
+    });
+
+    // Initial render
+    renderCgPhotos();
+    renderPatientPhotos();
   }
 
   /* ---------------------------------------------------------
@@ -104,428 +271,161 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ---------------------------------------------------------
-     Portal Switcher & Role Security Management
+     Starting Dual-Window Gateway & Caretaker Authentication
      --------------------------------------------------------- */
   function setupPortalSwitching() {
-    const roleWelcomeModal = document.getElementById('role-welcome-modal');
-    const btnSelectPatientRole = document.getElementById('btn-select-patient-role');
-    const btnSelectCaretakerRole = document.getElementById('btn-select-caretaker-role');
+    const gatewayScreen = document.getElementById('portal-gateway-screen');
+    const gatewayPatientSelect = document.getElementById('gateway-patient-select');
+    const btnEnterPatient = document.getElementById('btn-enter-patient-window');
+    
+    const caretakerLoginForm = document.getElementById('form-caretaker-login');
+    const caretakerLoginName = document.getElementById('caretaker-login-name');
+    const caretakerLoginPass = document.getElementById('caretaker-login-password');
+    const caretakerLoginErr = document.getElementById('caretaker-login-error');
+    const btnAutofillCaretaker = document.getElementById('btn-autofill-caretaker');
+    
+    const btnGatewayLangEn = document.getElementById('gateway-lang-en');
+    const btnGatewayLangHi = document.getElementById('gateway-lang-hi');
 
-    const caretakerPinModal = document.getElementById('caretaker-pin-modal');
-    const pinModalClose = document.getElementById('pin-modal-close');
-    const btnPinCancel = document.getElementById('btn-pin-cancel');
-    const caretakerPinForm = document.getElementById('caretaker-pin-form');
-    const caretakerPinInput = document.getElementById('caretaker-pin-input');
-    const pinErrorMsg = document.getElementById('pin-error-msg');
+    // Populate Gateway Patient Dropdown
+    function populateGatewayPatients() {
+      if (!gatewayPatientSelect) return;
+      const patients = window.smritiData.getPatients();
+      const activeId = window.smritiData.getActivePatientId();
+      gatewayPatientSelect.innerHTML = patients.map(p => {
+        const selected = p.id === activeId ? 'selected' : '';
+        const stageShort = (p.stage || '').split('(')[0].trim();
+        return `<option value="${p.id}" ${selected}>${p.preferredName} (${p.name}, ${p.age}y - ${stageShort})</option>`;
+      }).join('');
+    }
 
-    // Check first-time role selection
+    populateGatewayPatients();
+
+    // Check saved role or show gateway at starting
     const savedRole = window.smritiData.getUserRole();
-    if (!savedRole && roleWelcomeModal) {
-      setTimeout(() => {
-        roleWelcomeModal.classList.add('active');
-      }, 350);
+    if (!savedRole && gatewayScreen) {
+      gatewayScreen.classList.add('active');
     }
 
-    if (btnSelectPatientRole) {
-      btnSelectPatientRole.addEventListener('click', () => {
+    // Gateway Language Switcher
+    if (btnGatewayLangEn) {
+      btnGatewayLangEn.addEventListener('click', () => {
+        if (window.smritiI18n) window.smritiI18n.setLanguage('en');
+        btnGatewayLangEn.classList.add('active');
+        btnGatewayLangHi?.classList.remove('active');
+        btnGatewayLangEn.style.background = '#3b82f6';
+        btnGatewayLangEn.style.color = '#ffffff';
+        if (btnGatewayLangHi) {
+          btnGatewayLangHi.style.background = 'transparent';
+          btnGatewayLangHi.style.color = '#e2e8f0';
+        }
+      });
+    }
+
+    if (btnGatewayLangHi) {
+      btnGatewayLangHi.addEventListener('click', () => {
+        if (window.smritiI18n) window.smritiI18n.setLanguage('hi');
+        btnGatewayLangHi.classList.add('active');
+        btnGatewayLangEn?.classList.remove('active');
+        btnGatewayLangHi.style.background = '#3b82f6';
+        btnGatewayLangHi.style.color = '#ffffff';
+        if (btnGatewayLangEn) {
+          btnGatewayLangEn.style.background = 'transparent';
+          btnGatewayLangEn.style.color = '#e2e8f0';
+        }
+      });
+    }
+
+    // PROFILE 1: Open Patient Companion Profile
+    if (btnEnterPatient) {
+      btnEnterPatient.addEventListener('click', () => {
+        const selectedPatientId = gatewayPatientSelect ? gatewayPatientSelect.value : null;
+        if (selectedPatientId) {
+          window.smritiData.setActivePatient(selectedPatientId);
+        }
         window.smritiData.setUserRole('patient');
-        roleWelcomeModal.classList.remove('active');
+        if (gatewayScreen) gatewayScreen.classList.remove('active');
         switchPortal('patient');
-        showToast('Welcome, Patient Mode active');
+        setupDateTimeGreeting();
+
+        const activePatient = window.smritiData.getActivePatient();
+        const isHi = window.smritiI18n && window.smritiI18n.getLanguage() === 'hi';
+        const msg = isHi 
+          ? `नमस्ते ${activePatient.preferredName}! आपकी प्रोफाइल में आपका स्वागत है।` 
+          : `Welcome ${activePatient.preferredName}! Your patient companion profile is open.`;
+        window.smritiSpeech.speak(msg);
+        showToast(msg);
       });
     }
 
-    if (btnSelectCaretakerRole) {
-      btnSelectCaretakerRole.addEventListener('click', () => {
-        roleWelcomeModal.classList.remove('active');
-        openPinModal();
+    // Autofill Sarah Vance helper
+    if (btnAutofillCaretaker) {
+      btnAutofillCaretaker.addEventListener('click', () => {
+        if (caretakerLoginName) caretakerLoginName.value = 'Sarah Vance';
+        if (caretakerLoginPass) caretakerLoginPass.value = 'password123';
+        if (caretakerLoginErr) caretakerLoginErr.style.display = 'none';
+        showToast('Filled credentials for Sarah Vance');
       });
     }
 
-    // PIN Modal Views and Elements
-    const pinViewUnlock = document.getElementById('pin-view-unlock');
-    const pinViewChange = document.getElementById('pin-view-change');
-    const pinViewForgot = document.getElementById('pin-view-forgot');
-    const pinModalTitle = document.getElementById('pin-modal-title');
-    const pinCgNameBadge = document.getElementById('pin-caregiver-name-badge');
-
-    // Subview Navigation Buttons
-    const btnNavToChangePin = document.getElementById('btn-nav-to-change-pin');
-    const btnNavToForgotPin = document.getElementById('btn-nav-to-forgot-pin');
-    const btnBackFromChange = document.getElementById('btn-back-from-change');
-    const btnBackFromForgot1 = document.getElementById('btn-back-from-forgot-1');
-    const btnBackFromForgot2 = document.getElementById('btn-back-from-forgot-2');
-
-    // Change Passcode Elements
-    const changePinForm = document.getElementById('change-pin-form');
-    const changePinCurrent = document.getElementById('change-pin-current');
-    const changePinNew = document.getElementById('change-pin-new');
-    const changePinConfirm = document.getElementById('change-pin-confirm');
-    const changePinErrorMsg = document.getElementById('change-pin-error-msg');
-    const changePinSuccessMsg = document.getElementById('change-pin-success-msg');
-
-    // Forgot Passcode Elements
-    const forgotInfoName = document.getElementById('forgot-info-name');
-    const forgotInfoPhoneMasked = document.getElementById('forgot-info-phone-masked');
-    const forgotStep1 = document.getElementById('forgot-step-1');
-    const forgotStep2 = document.getElementById('forgot-step-2');
-    const forgotPhoneInput = document.getElementById('forgot-phone-input');
-    const forgotPhoneErrorMsg = document.getElementById('forgot-phone-error-msg');
-    const btnVerifyPhone = document.getElementById('btn-verify-phone');
-    const forgotSimulatedOtp = document.getElementById('forgot-simulated-otp');
-    const forgotOtpInput = document.getElementById('forgot-otp-input');
-    const forgotNewPin = document.getElementById('forgot-new-pin');
-    const forgotConfirmPin = document.getElementById('forgot-confirm-pin');
-    const forgotStep2ErrorMsg = document.getElementById('forgot-step2-error-msg');
-
-    let currentSimulatedOtp = null;
-
-    function updatePinModalMeta() {
-      const cg = window.smritiData.getCaregiverProfile();
-      const pt = window.smritiData.getPatient();
-      const cgName = cg.name || pt.caregiverName || 'Sarah Vance';
-      const rawPhone = cg.phone || pt.emergencyPhone || '+1 (555) 382-9011';
-      const cleanDigits = rawPhone.replace(/\D/g, '');
-      const masked = cleanDigits.length >= 4 ? `...${cleanDigits.slice(-4)}` : rawPhone;
-
-      if (pinCgNameBadge) pinCgNameBadge.textContent = cgName;
-      if (forgotInfoName) forgotInfoName.textContent = cgName;
-      if (forgotInfoPhoneMasked) forgotInfoPhoneMasked.textContent = masked;
-    }
-
-    function switchPinSubview(subview) {
-      updatePinModalMeta();
-      if (pinViewUnlock) pinViewUnlock.style.display = subview === 'unlock' ? 'flex' : 'none';
-      if (pinViewChange) pinViewChange.style.display = subview === 'change' ? 'flex' : 'none';
-      if (pinViewForgot) pinViewForgot.style.display = subview === 'forgot' ? 'flex' : 'none';
-
-      if (subview === 'unlock') {
-        if (pinModalTitle) pinModalTitle.textContent = 'Caregiver Security Access';
-        if (caretakerPinInput) {
-          caretakerPinInput.value = '';
-          setTimeout(() => caretakerPinInput.focus(), 100);
-        }
-        if (pinErrorMsg) pinErrorMsg.style.display = 'none';
-      } else if (subview === 'change') {
-        if (pinModalTitle) pinModalTitle.textContent = 'Change Caregiver Passcode';
-        if (changePinCurrent) changePinCurrent.value = '';
-        if (changePinNew) changePinNew.value = '';
-        if (changePinConfirm) changePinConfirm.value = '';
-        if (changePinErrorMsg) changePinErrorMsg.style.display = 'none';
-        if (changePinSuccessMsg) changePinSuccessMsg.style.display = 'none';
-        setTimeout(() => changePinCurrent && changePinCurrent.focus(), 100);
-      } else if (subview === 'forgot') {
-        if (pinModalTitle) pinModalTitle.textContent = 'Reset Passcode via Phone';
-        if (forgotStep1) forgotStep1.style.display = 'flex';
-        if (forgotStep2) forgotStep2.style.display = 'none';
-        // Prefill registered caretaker phone number for user convenience
-        if (forgotPhoneInput) forgotPhoneInput.value = rawPhone || '';
-        if (forgotPhoneErrorMsg) forgotPhoneErrorMsg.style.display = 'none';
-        if (forgotStep2ErrorMsg) forgotStep2ErrorMsg.style.display = 'none';
-        setTimeout(() => forgotPhoneInput && forgotPhoneInput.focus(), 100);
-      }
-    }
-
-    // Caregiver PIN Modal Open / Close
-    function openPinModal(initialSubview = 'unlock') {
-      switchPinSubview(initialSubview);
-      if (caretakerPinModal) caretakerPinModal.classList.add('active');
-    }
-
-    function closePinModal() {
-      if (caretakerPinModal) caretakerPinModal.classList.remove('active');
-    }
-
-    if (pinModalClose) pinModalClose.addEventListener('click', closePinModal);
-    if (btnPinCancel) btnPinCancel.addEventListener('click', closePinModal);
-
-    // Subview Navigation Listeners
-    if (btnNavToChangePin) {
-      btnNavToChangePin.addEventListener('click', () => switchPinSubview('change'));
-    }
-    if (btnNavToForgotPin) {
-      btnNavToForgotPin.addEventListener('click', () => switchPinSubview('forgot'));
-    }
-    if (btnBackFromChange) {
-      btnBackFromChange.addEventListener('click', () => switchPinSubview('unlock'));
-    }
-    if (btnBackFromForgot1) {
-      btnBackFromForgot1.addEventListener('click', () => switchPinSubview('unlock'));
-    }
-    if (btnBackFromForgot2) {
-      btnBackFromForgot2.addEventListener('click', () => {
-        if (forgotStep1) forgotStep1.style.display = 'flex';
-        if (forgotStep2) forgotStep2.style.display = 'none';
-      });
-    }
-
-    // Caregiver Portal Header Direct "Change Passcode" button
-    const btnChangePinCg = document.getElementById('btn-change-pin-cg');
-    if (btnChangePinCg) {
-      btnChangePinCg.addEventListener('click', () => {
-        openPinModal('change');
-      });
-    }
-
-    // Real Notification Helper
-    function triggerDesktopSecurityAlert(otp, phoneStr) {
-      if (!("Notification" in window)) return;
-      const sendNotif = () => {
-        try {
-          new Notification("Smriti Caregiver Security", {
-            body: `Passcode reset code for ${phoneStr}: ${otp}`
-          });
-        } catch(e) {}
-      };
-
-      if (Notification.permission === "granted") {
-        sendNotif();
-      } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(permission => {
-          if (permission === "granted") sendNotif();
-        });
-      }
-    }
-
-    // 1. Verify Standard PIN submission
-    if (caretakerPinForm) {
-      caretakerPinForm.addEventListener('submit', (e) => {
+    // PROFILE 2: Caretaker Login Form Submission
+    if (caretakerLoginForm) {
+      caretakerLoginForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const entered = caretakerPinInput.value.trim();
-        if (window.smritiData.verifyCaregiverPin(entered)) {
-          if (pinErrorMsg) pinErrorMsg.style.display = 'none';
-          closePinModal();
-          window.smritiData.setUserRole('caregiver');
+        const nameOrEmail = (caretakerLoginName?.value || '').trim();
+        const password = (caretakerLoginPass?.value || '').trim();
+
+        const res = window.smritiData.loginCaregiver(nameOrEmail, password);
+        if (res.success) {
+          if (caretakerLoginErr) caretakerLoginErr.style.display = 'none';
+          if (gatewayScreen) gatewayScreen.classList.remove('active');
           switchPortal('caregiver');
+          renderPatientRoster();
           if (window.smritiAudio) window.smritiAudio.playSuccess();
-          showToast('Caregiver Portal unlocked!');
+          showToast(`Welcome, Caretaker ${res.caregiver.name}! Multi-patient command center active.`);
         } else {
-          if (pinErrorMsg) pinErrorMsg.style.display = 'block';
-          caretakerPinInput.value = '';
+          if (caretakerLoginErr) {
+            caretakerLoginErr.textContent = `⚠️ ${res.error}`;
+            caretakerLoginErr.style.display = 'block';
+          }
           if (window.smritiAudio) window.smritiAudio.playPop();
-          showToast('Incorrect Caregiver passcode!');
         }
       });
     }
 
-    // 2. Change Passcode submission (when user knows previous passcode)
-    if (changePinForm) {
-      changePinForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const curr = (changePinCurrent?.value || '').trim();
-        const next = (changePinNew?.value || '').trim();
-        const conf = (changePinConfirm?.value || '').trim();
-
-        if (changePinErrorMsg) changePinErrorMsg.style.display = 'none';
-        if (changePinSuccessMsg) changePinSuccessMsg.style.display = 'none';
-
-        if (!window.smritiData.verifyCaregiverPin(curr)) {
-          if (changePinErrorMsg) {
-            changePinErrorMsg.textContent = '⚠️ Current passcode is incorrect. If forgotten, use the Phone Reset option.';
-            changePinErrorMsg.style.display = 'block';
-          }
-          if (changePinCurrent) changePinCurrent.focus();
-          if (window.smritiAudio) window.smritiAudio.playPop();
-          return;
-        }
-
-        if (next.length < 4) {
-          if (changePinErrorMsg) {
-            changePinErrorMsg.textContent = '⚠️ New passcode must be at least 4 digits.';
-            changePinErrorMsg.style.display = 'block';
-          }
-          if (changePinNew) changePinNew.focus();
-          return;
-        }
-
-        if (next !== conf) {
-          if (changePinErrorMsg) {
-            changePinErrorMsg.textContent = '⚠️ New passcodes do not match.';
-            changePinErrorMsg.style.display = 'block';
-          }
-          if (changePinConfirm) changePinConfirm.focus();
-          return;
-        }
-
-        // Successfully updated
-        window.smritiData.setCaregiverPin(next);
-        if (changePinSuccessMsg) {
-          changePinSuccessMsg.textContent = '✅ Passcode successfully changed! Unlocking Caregiver Portal...';
-          changePinSuccessMsg.style.display = 'block';
-        }
-        if (window.smritiAudio) window.smritiAudio.playSuccess();
-        showToast('Caregiver passcode successfully updated!');
-
-        setTimeout(() => {
-          closePinModal();
-          window.smritiData.setUserRole('caregiver');
-          switchPortal('caregiver');
-        }, 800);
-      });
-    }
-
-    // 3. Forgot Passcode Step 1: Verify Caretaker Phone Number & Dispatch
-    if (btnVerifyPhone) {
-      btnVerifyPhone.addEventListener('click', () => {
-        const entered = (forgotPhoneInput?.value || '').trim();
-        const enteredDigits = entered.replace(/\D/g, '');
-
-        if (forgotPhoneErrorMsg) forgotPhoneErrorMsg.style.display = 'none';
-
-        if (enteredDigits.length < 4) {
-          if (forgotPhoneErrorMsg) {
-            forgotPhoneErrorMsg.textContent = '⚠️ Please enter a valid caretaker phone number.';
-            forgotPhoneErrorMsg.style.display = 'block';
-          }
-          return;
-        }
-
-        const cg = window.smritiData.getCaregiverProfile();
-        const pt = window.smritiData.getPatient();
-        const actualNumbers = [cg.phone, pt.emergencyPhone].filter(Boolean);
-
-        const isMatch = actualNumbers.some(p => {
-          const pDigits = p.replace(/\D/g, '');
-          return (pDigits.endsWith(enteredDigits) || enteredDigits.endsWith(pDigits) || pDigits === enteredDigits);
-        });
-
-        if (!isMatch) {
-          const sample = (actualNumbers[0] || '').replace(/\D/g, '');
-          const last4 = sample.length >= 4 ? sample.slice(-4) : '...';
-          if (forgotPhoneErrorMsg) {
-            forgotPhoneErrorMsg.textContent = `⚠️ Number does not match registered caretaker (ends in ...${last4}). Please check your records.`;
-            forgotPhoneErrorMsg.style.display = 'block';
-          }
-          if (window.smritiAudio) window.smritiAudio.playPop();
-          return;
-        }
-
-        // Generate Real Verification Code
-        currentSimulatedOtp = String(Math.floor(1000 + Math.random() * 9000));
-
-        // Dispatch to Server endpoint (logged in server console and sent via SMS gateway if configured)
-        fetch('/api/send-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone: entered, otp: currentSimulatedOtp })
-        }).catch(() => {});
-
-        // Configure WhatsApp Direct Delivery link to caretaker's mobile
-        let waDigits = enteredDigits;
-        if (waDigits.length === 10) {
-          waDigits = '91' + waDigits;
-        }
-        const waMsg = encodeURIComponent(`[Smriti Dementia Care] Your Caregiver Passcode Reset Code is: ${currentSimulatedOtp}. Enter this 4-digit code to unlock the Caregiver Portal.`);
-        const waUrl = `https://api.whatsapp.com/send?phone=${waDigits}&text=${waMsg}`;
-        const btnSendWhatsApp = document.getElementById('btn-send-whatsapp-otp');
-        if (btnSendWhatsApp) {
-          btnSendWhatsApp.href = waUrl;
-        }
-
-        // Automatically open WhatsApp to deliver the code directly to caretaker's phone
-        try {
-          window.open(waUrl, '_blank');
-        } catch(e) {}
-
-        const confirmedPhoneEl = document.getElementById('forgot-confirmed-phone');
-        if (confirmedPhoneEl) {
-          const last4 = enteredDigits.length >= 4 ? enteredDigits.slice(-4) : '...';
-          confirmedPhoneEl.textContent = `+91 ******${last4}`;
-        }
-
-        if (forgotStep1) forgotStep1.style.display = 'none';
-        if (forgotStep2) forgotStep2.style.display = 'flex';
-        if (forgotStep2ErrorMsg) forgotStep2ErrorMsg.style.display = 'none';
-        if (forgotOtpInput) {
-          forgotOtpInput.value = '';
-          setTimeout(() => forgotOtpInput.focus(), 150);
-        }
-        if (forgotNewPin) forgotNewPin.value = '';
-        if (forgotConfirmPin) forgotConfirmPin.value = '';
-
-        if (window.smritiAudio) window.smritiAudio.playChime(3);
-        showToast('Verification code dispatched to caretaker mobile!');
-      });
-    }
-
-    // 4. Forgot Passcode Step 2: Set New Passcode after SMS Verification
-    if (forgotStep2) {
-      forgotStep2.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const enteredOtp = (forgotOtpInput?.value || '').trim();
-        const next = (forgotNewPin?.value || '').trim();
-        const conf = (forgotConfirmPin?.value || '').trim();
-
-        if (forgotStep2ErrorMsg) forgotStep2ErrorMsg.style.display = 'none';
-
-        if (enteredOtp !== currentSimulatedOtp) {
-          if (forgotStep2ErrorMsg) {
-            forgotStep2ErrorMsg.textContent = '⚠️ Invalid SMS verification code. Please check the code.';
-            forgotStep2ErrorMsg.style.display = 'block';
-          }
-          if (window.smritiAudio) window.smritiAudio.playPop();
-          return;
-        }
-
-        if (next.length < 4) {
-          if (forgotStep2ErrorMsg) {
-            forgotStep2ErrorMsg.textContent = '⚠️ Passcode must be at least 4 digits.';
-            forgotStep2ErrorMsg.style.display = 'block';
-          }
-          if (forgotNewPin) forgotNewPin.focus();
-          return;
-        }
-
-        if (next !== conf) {
-          if (forgotStep2ErrorMsg) {
-            forgotStep2ErrorMsg.textContent = '⚠️ Passcodes do not match.';
-            forgotStep2ErrorMsg.style.display = 'block';
-          }
-          if (forgotConfirmPin) forgotConfirmPin.focus();
-          return;
-        }
-
-        // Successfully reset
-        window.smritiData.setCaregiverPin(next);
-        if (window.smritiAudio) window.smritiAudio.playSuccess();
-        showToast('Passcode successfully reset! Unlocking Caregiver Portal.');
-
-        closePinModal();
-        window.smritiData.setUserRole('caregiver');
-        switchPortal('caregiver');
-      });
-    }
-
-    // Navigation buttons
+    // Navigation buttons in top header
     btnPortalPatient.addEventListener('click', () => {
-      window.smritiData.setUserRole('patient');
       switchPortal('patient');
     });
 
     btnPortalCaregiver.addEventListener('click', () => {
-      // Require security PIN to access Caregiver Dashboard & Patient Records
-      if (state.currentPortal === 'patient') {
-        openPinModal();
+      const currentRole = window.smritiData.getUserRole();
+      if (currentRole !== 'caregiver') {
+        if (gatewayScreen) {
+          gatewayScreen.classList.add('active');
+          if (caretakerLoginPass) caretakerLoginPass.focus();
+        }
       } else {
         switchPortal('caregiver');
       }
     });
 
-    // Logout / Switch User Handlers
+    // Logout / Switch User Handlers (Returns to Starting Dual Window Gateway)
     const btnLogout = document.getElementById('btn-logout');
     const btnLogoutCg = document.getElementById('btn-logout-cg');
+    const btnHubLogout = document.getElementById('btn-hub-logout');
 
-    const handleLogout = () => {
+    const handleLogoutToGateway = () => {
       window.smritiData.setUserRole(null);
-      switchPortal('patient');
-      showToast('Logged out. Please choose your role.');
-      if (roleWelcomeModal) {
-        roleWelcomeModal.classList.add('active');
-      }
+      populateGatewayPatients();
+      if (caretakerLoginErr) caretakerLoginErr.style.display = 'none';
+      if (gatewayScreen) gatewayScreen.classList.add('active');
+      showToast('Returned to Starting Window selection.');
     };
 
-    if (btnLogout) btnLogout.addEventListener('click', handleLogout);
-    if (btnLogoutCg) btnLogoutCg.addEventListener('click', handleLogout);
+    if (btnLogout) btnLogout.addEventListener('click', handleLogoutToGateway);
+    if (btnLogoutCg) btnLogoutCg.addEventListener('click', handleLogoutToGateway);
+    if (btnHubLogout) btnHubLogout.addEventListener('click', handleLogoutToGateway);
   }
 
   function switchPortal(portal) {
@@ -631,19 +531,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     switch (gameType) {
       case 'memory':
-        gameModalTitle.innerHTML = '<svg class="icon-svg" style="width:22px;height:22px;color:var(--primary);margin-right:8px;" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg><span>Daily Essentials Match</span>';
+        gameModalTitle.innerHTML = '<span>👓 Daily Essentials Match</span>';
         state.activeGame = new window.MemoryGame('game-container', () => closeGameModal());
         break;
       case 'sequencing':
-        gameModalTitle.innerHTML = '<svg class="icon-svg" style="width:22px;height:22px;color:var(--primary);margin-right:8px;" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Daily Routine Sequencing</span>';
+        gameModalTitle.innerHTML = '<span>📋 Daily Routine Sequencing</span>';
         state.activeGame = new window.SequencingGame('game-container', () => closeGameModal());
         break;
       case 'recognition':
-        gameModalTitle.innerHTML = '<svg class="icon-svg" style="width:22px;height:22px;color:var(--primary);margin-right:8px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>Everyday Object Recognition</span>';
+        gameModalTitle.innerHTML = '<span>💡 Everyday Object Recognition</span>';
         state.activeGame = new window.RecognitionGame('game-container', () => closeGameModal());
         break;
       case 'garden':
-        gameModalTitle.innerHTML = '<svg class="icon-svg" style="width:22px;height:22px;color:var(--primary);margin-right:8px;" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/></svg><span>Calming Focus Garden</span>';
+        gameModalTitle.innerHTML = '<span>🌸 Calming Focus Garden</span>';
         state.activeGame = new window.FocusGardenGame('game-container', () => closeGameModal());
         break;
     }
@@ -709,6 +609,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     });
+
+    // Multi-Patient Roster Rendering
+    renderPatientRoster();
+
+    // Patient select dropdown in status banner
+    const patientSelectDropdown = document.getElementById('cg-patient-select-dropdown');
+    if (patientSelectDropdown) {
+      patientSelectDropdown.addEventListener('change', (e) => {
+        const newPatientId = e.target.value;
+        if (newPatientId) {
+          window.smritiData.setActivePatient(newPatientId);
+          refreshCaregiverDashboard();
+          renderPatientRoster();
+          setupDateTimeGreeting();
+          const p = window.smritiData.getActivePatient();
+          showToast(`Now inspecting: ${p.name}`);
+        }
+      });
+    }
+
+    // Add New Patient Button from Roster
+    const btnAddNewPatient = document.getElementById('btn-add-new-patient-roster');
+    const newUserModal = document.getElementById('new-user-modal');
+    if (btnAddNewPatient && newUserModal) {
+      btnAddNewPatient.addEventListener('click', () => {
+        newUserModal.classList.add('active');
+      });
+    }
+
 
     // Caregiver Note Form
     if (noteForm) {
@@ -830,12 +759,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const chips = chipsBar.querySelectorAll('[data-chip]');
         chips.forEach(chip => {
           const type = chip.getAttribute('data-chip');
-          if (type === 'call_caregiver') chip.textContent = isHi ? `कॉल करें: ${cgName}` : `Call ${cgName}`;
-          if (type === 'call_doctor') chip.textContent = isHi ? 'डॉक्टर को कॉल करें' : 'Call Doctor';
-          if (type === 'location') chip.textContent = isHi ? 'मैं कहाँ हूँ?' : 'Where am I?';
+          if (type === 'call_caregiver') chip.textContent = isHi ? `📞 कॉल करें: ${cgName}` : `📞 Call ${cgName}`;
+          if (type === 'call_doctor') chip.textContent = isHi ? '🩺 डॉक्टर को कॉल करें' : '🩺 Call Doctor';
+          if (type === 'location') chip.textContent = isHi ? '📍 मैं कहाँ हूँ?' : '📍 Where am I?';
           if (type === 'date') chip.textContent = isHi ? '⏰ आज कौन सा दिन है?' : '⏰ What day is today?';
-          if (type === 'go_garden') chip.textContent = isHi ? 'फूलों का बगीचा' : 'Visit Garden';
-          if (type === 'comfort') chip.textContent = isHi ? 'मुझे थोड़ी चिंता हो रही है' : 'I feel worried';
+          if (type === 'go_garden') chip.textContent = isHi ? '🌸 फूलों का बगीचा' : '🌸 Visit Garden';
+          if (type === 'comfort') chip.textContent = isHi ? '💖 मुझे थोड़ी चिंता हो रही है' : '💖 I feel worried';
         });
       }
     }
@@ -934,7 +863,7 @@ document.addEventListener('DOMContentLoaded', () => {
           bot.messages.push({ 
             sender: 'bot', 
             text: fallbackReply, 
-            actions: [{ label: isHi ? "देखभालकर्ता को कॉल करें" : "Call Caretaker", type: "call_caregiver" }] 
+            actions: [{ label: isHi ? "📞 देखभालकर्ता को कॉल करें" : "📞 Call Caretaker", type: "call_caregiver" }] 
           });
           renderMessages();
           window.smritiSpeech.speak(fallbackReply);
@@ -951,227 +880,6 @@ document.addEventListener('DOMContentLoaded', () => {
         handleUserSend(txt);
       });
     }
-  }
-
-  /* ---------------------------------------------------------
-     Sarvam AI Indic Voice Engine Controller
-     --------------------------------------------------------- */
-  function setupSarvamVoiceAssistant() {
-    const sarvamModal = document.getElementById('sarvam-settings-modal');
-    const btnOpenSarvam = document.getElementById('btn-sarvam-voice-settings');
-    const sarvamClose = document.getElementById('sarvam-modal-close');
-    const keyForm = document.getElementById('form-sarvam-key');
-    const keyInput = document.getElementById('sarvam-key-input');
-    const toggleKeyBtn = document.getElementById('btn-toggle-key-visibility');
-    const testVoiceBtn = document.getElementById('btn-test-sarvam-voice');
-    const resetVoiceBtn = document.getElementById('btn-reset-sarvam');
-    const voiceDot = document.getElementById('sarvam-voice-dot');
-    const voiceLabel = document.getElementById('sarvam-voice-label');
-    const statusBanner = document.getElementById('sarvam-status-banner');
-    const statusIcon = document.getElementById('sarvam-status-icon');
-    const statusHeading = document.getElementById('sarvam-status-heading');
-    const statusDesc = document.getElementById('sarvam-status-desc');
-    const badgePill = document.getElementById('sarvam-badge-pill');
-    const speakerChoices = document.querySelectorAll('.sarvam-voice-choice');
-
-    if (!sarvamModal) return;
-
-    const openModal = () => {
-      refreshSarvamUI();
-      sarvamModal.classList.add('active');
-      if (keyInput && window.smritiSpeech && window.smritiSpeech.sarvamApiKey) {
-        keyInput.value = window.smritiSpeech.sarvamApiKey;
-      }
-    };
-
-    const closeModal = () => {
-      sarvamModal.classList.remove('active');
-    };
-
-    if (btnOpenSarvam) btnOpenSarvam.addEventListener('click', openModal);
-    if (sarvamClose) sarvamClose.addEventListener('click', closeModal);
-
-    // Toggle password visibility
-    if (toggleKeyBtn && keyInput) {
-      toggleKeyBtn.addEventListener('click', () => {
-        keyInput.type = keyInput.type === 'password' ? 'text' : 'password';
-        toggleKeyBtn.textContent = keyInput.type === 'password' ? 'Show/Hide' : 'Hide';
-      });
-    }
-
-    // Radio choice visual styling
-    speakerChoices.forEach(choice => {
-      const radio = choice.querySelector('input[type="radio"]');
-      choice.addEventListener('click', () => {
-        speakerChoices.forEach(c => {
-          c.classList.remove('active');
-          c.style.borderColor = '#e2e8f0';
-          c.style.borderWidth = '1.5px';
-        });
-        choice.classList.add('active');
-        choice.style.borderColor = '#10b981';
-        choice.style.borderWidth = '2px';
-        if (radio) radio.checked = true;
-      });
-    });
-
-    function getSelectedSpeaker() {
-      const checked = document.querySelector('input[name="sarvam-speaker"]:checked');
-      return checked ? checked.value : (window.smritiSpeech?.sarvamSpeaker || 'priya');
-    }
-
-    function setSelectedSpeaker(speaker) {
-      const radio = document.querySelector(`input[name="sarvam-speaker"][value="${speaker}"]`);
-      if (radio) {
-        radio.checked = true;
-        speakerChoices.forEach(c => {
-          const r = c.querySelector('input[type="radio"]');
-          if (r && r.value === speaker) {
-            c.classList.add('active');
-            c.style.borderColor = '#10b981';
-            c.style.borderWidth = '2px';
-          } else {
-            c.classList.remove('active');
-            c.style.borderColor = '#e2e8f0';
-            c.style.borderWidth = '1.5px';
-          }
-        });
-      }
-    }
-
-    function refreshSarvamUI() {
-      if (!window.smritiSpeech) return;
-      const hasKey = window.smritiSpeech.sarvamActive || !!window.smritiSpeech.sarvamApiKey;
-      const speaker = window.smritiSpeech.sarvamSpeaker || 'priya';
-      setSelectedSpeaker(speaker);
-
-      if (hasKey) {
-        if (voiceDot) {
-          voiceDot.style.background = '#10b981';
-          voiceDot.style.boxShadow = '0 0 8px rgba(16,185,129,0.9)';
-        }
-        if (voiceLabel) {
-          const capSpeaker = speaker.charAt(0).toUpperCase() + speaker.slice(1);
-          voiceLabel.textContent = `Sarvam AI: ${capSpeaker} (Active)`;
-        }
-        if (statusBanner) {
-          statusBanner.style.background = '#f0fdf4';
-          statusBanner.style.borderColor = '#86efac';
-        }
-        if (statusIcon) statusIcon.textContent = '●';
-        if (statusHeading) statusHeading.textContent = 'Sarvam AI Indic Neural Voice Connected';
-        if (statusDesc) statusDesc.textContent = `Active Speaker: ${speaker.toUpperCase()} | Ultra-natural Indic Hindi & English Voice`;
-        if (badgePill) {
-          badgePill.style.background = '#dcfce7';
-          badgePill.style.color = '#166534';
-          badgePill.textContent = 'CONNECTED & ACTIVE';
-        }
-      } else {
-        if (voiceDot) {
-          voiceDot.style.background = '#f59e0b';
-          voiceDot.style.boxShadow = '0 0 8px rgba(245,158,11,0.8)';
-        }
-        if (voiceLabel) {
-          voiceLabel.textContent = `Sarvam Voice: Connect Key`;
-        }
-        if (statusBanner) {
-          statusBanner.style.background = '#fffbeb';
-          statusBanner.style.borderColor = '#fde68a';
-        }
-        if (statusIcon) statusIcon.textContent = '○';
-        if (statusHeading) statusHeading.textContent = 'Awaiting Sarvam AI Subscription Key';
-        if (statusDesc) statusDesc.textContent = 'Enter your API key below to activate ultra-natural Indic voices.';
-        if (badgePill) {
-          badgePill.style.background = '#fef3c7';
-          badgePill.style.color = '#92400e';
-          badgePill.textContent = 'SETUP REQUIRED';
-        }
-      }
-    }
-
-    // Save key & config
-    if (keyForm) {
-      keyForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const key = keyInput ? keyInput.value.trim() : '';
-        const speaker = getSelectedSpeaker();
-
-        if (window.smritiSpeech) {
-          showToast('Connecting to Sarvam AI voice engine...');
-          await window.smritiSpeech.saveSarvamConfig(key, speaker);
-          refreshSarvamUI();
-          showToast('✅ Sarvam AI Voice activated successfully!');
-          const isHi = window.smritiI18n && window.smritiI18n.getLanguage() === 'hi';
-          const welcomeMsg = isHi
-            ? `नमस्ते! मैं स्मृति हूँ। सर्वम एआई आवाज़ सक्रिय हो गई है।`
-            : `Hello! I am Smriti. Sarvam AI Voice has been successfully activated.`;
-          window.smritiSpeech.speak(welcomeMsg);
-          setTimeout(() => closeModal(), 1200);
-        }
-      });
-    }
-
-    // Test Voice button
-    if (testVoiceBtn) {
-      testVoiceBtn.addEventListener('click', async () => {
-        const inputKey = keyInput ? keyInput.value.trim() : '';
-        const speaker = getSelectedSpeaker();
-        if (inputKey && window.smritiSpeech) {
-          window.smritiSpeech.sarvamApiKey = inputKey;
-        }
-        testVoiceBtn.disabled = true;
-        testVoiceBtn.innerHTML = '<span>⏳</span> Playing...';
-
-        const isHi = window.smritiI18n && window.smritiI18n.getLanguage() === 'hi';
-        const sampleText = isHi
-          ? 'नमस्ते! मैं स्मृति हूँ, आपकी देखभाल और याददाश्त की साथी। आज आपका दिन कैसा बीत रहा है?'
-          : 'Hello! I am Smriti, your gentle memory and care companion. How are you feeling today?';
-
-        try {
-          if (window.smritiSpeech) {
-            await window.smritiSpeech.speakSarvam(sampleText, isHi ? 'hi-IN' : 'en-IN', speaker);
-          }
-        } finally {
-          testVoiceBtn.disabled = false;
-          testVoiceBtn.innerHTML = 'Listen Sample';
-        }
-      });
-    }
-
-    // Reset / fallback button
-    if (resetVoiceBtn) {
-      resetVoiceBtn.addEventListener('click', () => {
-        if (window.smritiSpeech) {
-          window.smritiSpeech.useSarvam = false;
-          showToast('Switched to local device speech voice.');
-          if (voiceLabel) voiceLabel.textContent = 'Local Voice Mode';
-          if (voiceDot) voiceDot.style.background = '#94a3b8';
-          closeModal();
-        }
-      });
-    }
-
-    // Update on Sarvam status events
-    window.addEventListener('sarvam:status', () => {
-      refreshSarvamUI();
-    });
-
-    // Soundwave glow on active speech
-    window.addEventListener('speech:start', () => {
-      if (btnOpenSarvam) {
-        btnOpenSarvam.style.transform = 'scale(1.05)';
-        btnOpenSarvam.style.boxShadow = '0 0 14px rgba(16,185,129,0.7)';
-      }
-    });
-
-    window.addEventListener('speech:end', () => {
-      if (btnOpenSarvam) {
-        btnOpenSarvam.style.transform = 'none';
-        btnOpenSarvam.style.boxShadow = '0 2px 6px rgba(16,185,129,0.15)';
-      }
-    });
-
-    refreshSarvamUI();
   }
 
   /* ---------------------------------------------------------
@@ -1270,13 +978,108 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function renderPatientRoster() {
+    const rosterGrid = document.getElementById('cg-patient-roster-grid');
+    const patientSelectDropdown = document.getElementById('cg-patient-select-dropdown');
+    const cgLoggedName = document.getElementById('cg-logged-in-caretaker');
+    const cgLoggedRole = document.getElementById('cg-logged-in-role');
+    const countBadge = document.getElementById('cg-patient-count-badge');
+
+    const caregiver = window.smritiData.getCurrentCaregiver();
+    const patients = window.smritiData.getCaregiverPatients();
+    const activePatient = window.smritiData.getActivePatient();
+
+    if (cgLoggedName && caregiver) cgLoggedName.textContent = caregiver.name;
+    if (countBadge) countBadge.textContent = `${patients.length} Patients Under Care`;
+
+    // Populate dropdown
+    if (patientSelectDropdown) {
+      patientSelectDropdown.innerHTML = patients.map(p => {
+        const isSel = p.id === activePatient.id ? 'selected' : '';
+        const stageShort = (p.stage || '').split('(')[0].trim();
+        return `<option value="${p.id}" ${isSel}>${p.name} (${p.age}y - ${stageShort})</option>`;
+      }).join('');
+    }
+
+    if (!rosterGrid) return;
+
+    const cardsHtml = patients.map(p => {
+      const isActive = p.id === activePatient.id;
+      const today = p.scores ? p.scores[p.scores.length - 1] : { averageScore: 85, mood: 'happy', gamesCompleted: 3 };
+      const avgScore = today?.averageScore || 85;
+      const mood = today?.mood || 'happy';
+      const gamesDone = today?.gamesCompleted != null ? today.gamesCompleted : 3;
+      const avatar = p.gender === 'Male' ? '👴' : '👵';
+
+      return `
+        <div class="cg-patient-card ${isActive ? 'active' : ''}" data-patient-id="${p.id}">
+          <div class="cg-card-top">
+            <div class="cg-card-avatar-wrap">
+              <div class="cg-card-avatar">${avatar}</div>
+              <div class="cg-card-name-meta">
+                <h4>${p.name}</h4>
+                <span>${p.age}y • ${(p.stage || '').split('(')[0].trim()}</span>
+              </div>
+            </div>
+            <div class="cg-card-score-pill" title="Actual Daily Score">${avgScore}%</div>
+          </div>
+
+          <div class="cg-card-stats-row">
+            <span>Mood: <strong>${mood.toUpperCase()}</strong></span>
+            <span>Games: <strong>${gamesDone} / 4</strong></span>
+          </div>
+
+          <div class="cg-card-bottom">
+            <span class="cg-card-badge">${isActive ? '● CURRENTLY INSPECTING' : 'CLICK TO INSPECT'}</span>
+            <span class="cg-card-inspect-action">${isActive ? 'Active Record ✓' : 'Inspect ➔'}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const addCardHtml = `
+      <div class="cg-add-patient-card" id="btn-add-patient-card-trigger">
+        <div class="cg-add-patient-icon">➕</div>
+        <strong style="font-size:1rem; color:#f8fafc;">Add New Patient</strong>
+        <span style="font-size:0.8rem; color:#94a3b8; text-align:center;">Register a new family member or resident</span>
+      </div>
+    `;
+
+    rosterGrid.innerHTML = cardsHtml + addCardHtml;
+
+    // Attach click listeners to cards
+    rosterGrid.querySelectorAll('.cg-patient-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const pId = card.getAttribute('data-patient-id');
+        if (pId && pId !== activePatient.id) {
+          window.smritiData.setActivePatient(pId);
+          refreshCaregiverDashboard();
+          renderPatientRoster();
+          setupDateTimeGreeting();
+          const newlySelected = window.smritiData.getActivePatient();
+          showToast(`Switched inspection to ${newlySelected.name}`);
+        }
+      });
+    });
+
+    const addCardBtn = document.getElementById('btn-add-patient-card-trigger');
+    if (addCardBtn) {
+      addCardBtn.addEventListener('click', () => {
+        const newUserModal = document.getElementById('new-user-modal');
+        if (newUserModal) newUserModal.classList.add('active');
+      });
+    }
+  }
+
   function refreshCaregiverDashboard() {
     const patient = window.smritiData.getPatient();
     const metrics = window.smritiData.getSummaryMetrics();
     const today = window.smritiData.getTodayRecord();
 
     // Patient Profile Banner
-    const nameEl = document.getElementById('cg-patient-name');
+    const avatarEl = document.getElementById('cg-patient-avatar');
+    if (avatarEl) avatarEl.textContent = patient.gender === 'Male' ? '👴' : '👵';
+        const nameEl = document.getElementById('cg-patient-name');
     const stageEl = document.getElementById('cg-patient-stage');
     const moodEl = document.getElementById('cg-today-mood-pill');
     const gamesCountEl = document.getElementById('cg-today-games-pill');
@@ -1315,6 +1118,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Redraw Bar Chart
     if (state.barChart) {
+      state.barChart.updateScores(patient.scores || window.smritiData.getRecords());
       setTimeout(() => {
         state.barChart.resizeAndDraw();
       }, 50);
@@ -1338,11 +1142,11 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       const moodEmoji = {
-        happy: 'Happy',
-        calm: 'Calm',
-        neutral: 'Neutral',
-        tired: 'Tired'
-      }[rec.mood] || 'Happy';
+        happy: '😊 Happy',
+        calm: '😌 Calm',
+        neutral: '😐 Neutral',
+        tired: '😔 Tired'
+      }[rec.mood] || '😊 Happy';
 
       return `
         <tr>
@@ -1387,10 +1191,10 @@ document.addEventListener('DOMContentLoaded', () => {
       state.isVoiceEnabled = window.smritiSpeech.toggleVoice();
       const isHi = window.smritiI18n && window.smritiI18n.getLanguage() === 'hi';
       if (state.isVoiceEnabled) {
-        toggleVoiceBtn.innerHTML = isHi ? 'आवाज़ चालू' : 'Voice On';
+        toggleVoiceBtn.innerHTML = isHi ? '🔊 आवाज़ चालू' : '🔊 Voice On';
         showToast(isHi ? 'ऑडियो वाचन सक्षम किया गया' : 'Audio reading enabled');
       } else {
-        toggleVoiceBtn.innerHTML = isHi ? 'आवाज़ बंद' : 'Voice Off';
+        toggleVoiceBtn.innerHTML = isHi ? '🔇 आवाज़ बंद' : '🔇 Voice Off';
         showToast(isHi ? 'ऑडियो वाचन म्यूट किया गया' : 'Audio reading muted');
       }
     });
@@ -1430,11 +1234,11 @@ document.addEventListener('DOMContentLoaded', () => {
       // Update voice & contrast button labels
       if (toggleVoiceBtn) {
         toggleVoiceBtn.innerHTML = state.isVoiceEnabled 
-          ? (lang === 'hi' ? 'आवाज़ चालू' : 'Voice On')
-          : (lang === 'hi' ? 'आवाज़ बंद' : 'Voice Off');
+          ? (lang === 'hi' ? '🔊 आवाज़ चालू' : '🔊 Voice On')
+          : (lang === 'hi' ? '🔇 आवाज़ बंद' : '🔇 Voice Off');
       }
       if (toggleContrastBtn) {
-        toggleContrastBtn.innerHTML = lang === 'hi' ? 'Show/Hide उच्च कंट्रास्ट' : 'Show/Hide High Contrast';
+        toggleContrastBtn.innerHTML = lang === 'hi' ? '👁️ उच्च कंट्रास्ट' : '👁️ High Contrast';
       }
     };
 
@@ -1444,10 +1248,10 @@ document.addEventListener('DOMContentLoaded', () => {
       syncButtonsAndUI(lang);
 
       if (lang === 'hi') {
-        showToast('भाषा बदलकर हिंदी कर दी गई है ');
+        showToast('भाषा बदलकर हिंदी कर दी गई है 🇮🇳');
         window.smritiSpeech.speak('नमस्ते! स्मृति में आपका स्वागत है। आपकी दैनिक गतिविधियों में हम आपके साथ हैं।');
       } else {
-        showToast('Language changed to English ');
+        showToast('Language changed to English 🇬🇧');
         window.smritiSpeech.speak('Language changed to English. Welcome back.');
       }
     };
@@ -1792,7 +1596,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       container.innerHTML = contributions.map(item => {
         const tagClass = item.type === 'game' ? 'game' : item.type === 'volunteer' ? 'volunteer' : 'tip';
-        const typeIcon = item.type === 'game' ? 'Game' : item.type === 'volunteer' ? 'Volunteer' : 'Tip';
+        const typeIcon = item.type === 'game' ? '🎮 Game' : item.type === 'volunteer' ? '🙋 Volunteer' : '💡 Tip';
 
         return `
           <div class="community-card" data-id="${item.id}">
@@ -1867,7 +1671,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const toast = document.createElement('div');
     toast.className = 'toast';
-    toast.innerHTML = `<span>${message}</span>`;
+    toast.innerHTML = `<span>💬</span><span>${message}</span>`;
     container.appendChild(toast);
 
     setTimeout(() => {

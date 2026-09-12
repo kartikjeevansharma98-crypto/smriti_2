@@ -122,19 +122,12 @@ class FocusGardenGame {
     this.container.innerHTML = `
       <div class="game-arena">
         <div class="game-instruction-banner">
-          <div class="game-instruction-text" style="display:flex; align-items:center; gap:8px;">
-            <svg class="icon-svg" style="width:20px;height:20px;color:var(--primary);" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-            <span>Level 1: Gentle Awakening (Round ${this.currentRound}/3)</span>
+          <div class="game-instruction-text">
+            <span>🌸 Level 1: Gentle Awakening (Round ${this.currentRound}/3)</span>
           </div>
           <div style="display:flex; gap:8px;">
-            <button class="read-btn" id="g-speak-btn" style="display:flex; align-items:center; gap:4px;">
-              <svg class="icon-svg" style="width:14px;height:14px;" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-              Read
-            </button>
-            <button class="read-btn" id="g-lvl-change-btn" style="background:#FAF4EA; border-color:rgba(184,82,65,0.3); color:#B85241; display:flex; align-items:center; gap:4px;">
-              <svg class="icon-svg" style="width:14px;height:14px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-              Change Level
-            </button>
+            <button class="read-btn" id="g-speak-btn">🔊 Read</button>
+            <button class="read-btn" id="g-lvl-change-btn" style="background:#eff6ff; color:#1e40af;">⚙️ Change Level</button>
           </div>
         </div>
 
