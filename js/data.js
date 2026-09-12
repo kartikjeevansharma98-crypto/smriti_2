@@ -297,6 +297,11 @@ class DataStore {
     return 'http://localhost:8080' + path;
   }
 
+  resetLocalCacheAndSync() {
+    Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k));
+    return this.syncWithServer();
+  }
+
   async syncWithServer() {
     try {
       const res = await fetch(this.getApiEndpoint('/api/data'));

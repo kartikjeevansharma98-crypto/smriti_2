@@ -1837,20 +1837,22 @@ document.addEventListener('DOMContentLoaded', () => {
   function listenForDataUpdates() {
     window.addEventListener('smriti_score_updated', () => {
       refreshPatientStatus();
+    });
+
+    window.addEventListener('smriti_data_synced', () => {
+      setupDateTimeGreeting();
+      refreshPatientStatus();
       refreshCaregiverDashboard();
     });
 
     window.addEventListener('smriti_mood_updated', () => {
-      if (state.currentPortal === 'caregiver') {
-        refreshCaregiverDashboard();
-      }
+      refreshCaregiverDashboard();
     });
 
     window.addEventListener('smriti_profile_updated', () => {
       setupDateTimeGreeting();
-      if (state.currentPortal === 'caregiver') {
-        refreshCaregiverDashboard();
-      }
+      refreshPatientStatus();
+      refreshCaregiverDashboard();
     });
   }
 
