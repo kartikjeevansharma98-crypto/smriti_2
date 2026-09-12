@@ -832,3 +832,107 @@
   font-size: 0.8rem;
   color: var(--text-secondary, #555452);
 }
+
+/* High Contrast Patient Overrides */
+body.high-contrast .patient-hero {
+  background: linear-gradient(135deg, #2D2D2D 0%, #222222 100%) !important;
+  border: 2px solid #E8694F !important;
+}
+
+body.high-contrast .patient-hero-content h2 {
+  color: #FFFFFF !important;
+}
+
+body.high-contrast .patient-hero-content p {
+  color: #E0E0E0 !important;
+}
+
+body.high-contrast .patient-date-badge {
+  background: #333333 !important;
+  border: 1.5px solid #E8694F !important;
+}
+
+body.high-contrast .patient-date-badge .day-name {
+  color: #E8694F !important;
+}
+
+body.high-contrast .patient-date-badge .full-date {
+  color: #CCCCCC !important;
+}
+
+body.high-contrast .mood-checkin-card {
+  background: #2A2A2A !important;
+  border: 2px solid rgba(232, 105, 79, 0.4) !important;
+}
+
+body.high-contrast .mood-title-area h3 {
+  color: #FFFFFF !important;
+}
+
+body.high-contrast .read-btn {
+  background: #382A26 !important;
+  border: 1.5px solid #E8694F !important;
+  color: #E8694F !important;
+}
+
+body.high-contrast .mood-btn {
+  background: #333333 !important;
+  border: 2px solid #444444 !important;
+}
+
+body.high-contrast .mood-btn .mood-label {
+  color: #FFFFFF !important;
+}
+
+body.high-contrast .mood-btn.selected {
+  background: #382A26 !important;
+  border-color: #E8694F !important;
+  box-shadow: 0 0 0 4px rgba(232, 105, 79, 0.4) !important;
+}
+
+body.high-contrast .mood-btn.selected .mood-label {
+  color: #E8694F !important;
+}
+
+body.high-contrast .section-headline h3 {
+  color: #FFFFFF !important;
+}
+
+body.high-contrast .section-headline span {
+  color: #CCCCCC !important;
+}
+
+body.high-contrast .game-card {
+  background: #2A2A2A !important;
+  border: 2px solid #444444 !important;
+}
+
+body.high-contrast .game-card-content h4 {
+  color: #FFFFFF !important;
+}
+
+body.high-contrast .game-card-content p {
+  color: #CCCCCC !important;
+}
+
+body.high-contrast .game-card:hover {
+  border-color: #E8694F !important;
+  box-shadow: 0 8px 24px rgba(232, 105, 79, 0.2) !important;
+}
+
+body.high-contrast .game-status-pill {
+  background: #382A26 !important;
+  color: #E8694F !important;
+  border: 1px solid #E8694F !important;
+}
+
+body.high-contrast .game-status-pill.done {
+  background: #223826 !important;
+  color: #8CFF9E !important;
+  border: 1px solid #3BE85D !important;
+}
+
+body.high-contrast .floating-support-btn {
+  background: #E8694F !important;
+  color: #FFFFFF !important;
+}

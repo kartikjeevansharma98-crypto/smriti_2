@@ -1689,4 +1689,127 @@ body.caregiver-mode {
   box-shadow: var(--shadow-md);
 }
 
+/* =========================================================
+   High Contrast & Dark Mode Comprehensive Overrides
+   ========================================================= */
+body.high-contrast {
+  background-color: #1A1A1A !important;
+  color: #FFFFFF !important;
+}
+
+/* Sidebar in High Contrast */
+body.high-contrast .sidebar-nav {
+  background: #242424 !important;
+  border-right: 1.5px solid rgba(232, 105, 79, 0.4) !important;
+}
+
+body.high-contrast .sidebar-section-label {
+  color: #E8694F !important;
+}
+
+body.high-contrast .sidebar-btn {
+  background: #2D2D2D !important;
+  border: 1.5px solid rgba(232, 105, 79, 0.4) !important;
+  color: #FFFFFF !important;
+}
+
+body.high-contrast .sidebar-btn .sidebar-label {
+  color: #FFFFFF !important;
+}
+
+body.high-contrast .sidebar-btn svg {
+  color: #E8694F !important;
+  stroke: #E8694F !important;
+}
+
+body.high-contrast .sidebar-btn:hover {
+  background: #E8694F !important;
+  color: #FFFFFF !important;
+  border-color: #E8694F !important;
+}
+
+body.high-contrast .sidebar-btn:hover .sidebar-label,
+body.high-contrast .sidebar-btn:hover svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+body.high-contrast .sidebar-btn.contribute-btn {
+  background: #382A26 !important;
+  border: 1.5px solid #E8694F !important;
+  color: #E8694F !important;
+}
+
+body.high-contrast .sidebar-btn.contribute-btn .sidebar-label {
+  color: #E8694F !important;
+}
+
+body.high-contrast .sidebar-btn.contribute-btn:hover {
+  background: #E8694F !important;
+  color: #FFFFFF !important;
+}
+
+body.high-contrast .sidebar-btn.contribute-btn:hover .sidebar-label {
+  color: #FFFFFF !important;
+}
+
+body.high-contrast .sidebar-btn.logout-btn {
+  background: #382222 !important;
+  border: 1.5px solid #E83B3B !important;
+  color: #FF8F8F !important;
+}
+
+body.high-contrast .sidebar-btn.logout-btn .sidebar-label {
+  color: #FF8F8F !important;
+}
+
+body.high-contrast .sidebar-btn.logout-btn:hover {
+  background: #E83B3B !important;
+  color: #FFFFFF !important;
+}
+
+body.high-contrast .sidebar-btn.logout-btn:hover .sidebar-label {
+  color: #FFFFFF !important;
+}
+
+body.high-contrast .sidebar-lang-group {
+  background: #2A2A2A !important;
+  border: 1.5px solid #E8694F !important;
+}
+
+body.high-contrast .sidebar-lang-group .lang-btn {
+  color: #CCCCCC !important;
+}
+
+body.high-contrast .sidebar-lang-group .lang-btn.active {
+  background: #E8694F !important;
+  color: #FFFFFF !important;
+}
+
+/* Header in High Contrast */
+body.high-contrast .app-header {
+  background: #242424 !important;
+  border-bottom: 1.5px solid rgba(232, 105, 79, 0.4) !important;
+}
+
+body.high-contrast .brand-titles h1,
+body.high-contrast .tagline {
+  color: #FFFFFF !important;
+}
+
+body.high-contrast .portal-switch-pill {
+  background: #2D2D2D !important;
+  border: 1.5px solid #E8694F !important;
+}
+
+body.high-contrast .portal-btn {
+  color: #CCCCCC !important;
+}
+
+body.high-contrast .portal-btn.active {
+  background: #E8694F !important;
+  color: #FFFFFF !important;
+}
+
+
 
