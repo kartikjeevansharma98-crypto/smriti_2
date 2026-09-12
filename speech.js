@@ -15,10 +15,10 @@ class SpeechHelper {
     this.inEnVoice = null;
     this.hasNativeHindi = false;
 
-    // Sarvam AI Indic Voice Engine State
+    // Sarvam AI Indic Voice Engine State (Permanently locked to Simran Female)
     this.useSarvam = true;
     this.sarvamActive = false;
-    this.sarvamSpeaker = localStorage.getItem('smriti_sarvam_speaker') || 'priya';
+    this.sarvamSpeaker = 'simran';
     this.sarvamApiKey = localStorage.getItem('smriti_sarvam_key') || '';
     this.currentAudio = null;
     this.isSpeaking = false;
@@ -240,18 +240,8 @@ class SpeechHelper {
     this.stopAllAudio();
     const mySpeechId = ++this.currentSpeechId;
 
-    // First attempt Sarvam AI if enabled and key is available
-    if (this.useSarvam && (this.sarvamActive || this.sarvamApiKey)) {
-      const sarvamSuccess = await this.speakSarvam(text, null, null, mySpeechId);
-      if (sarvamSuccess) {
-        return;
-      }
-    }
-
-    // Seamless fallback to browser Web Speech API if this request is still current
-    if (mySpeechId === this.currentSpeechId) {
-      this.speakWebSpeech(text, rate, pitch, mySpeechId);
-    }
+    // Use ONLY Simran AI voice everywhere
+    await this.speakSarvam(text, null, 'simran', mySpeechId);
   }
 
   async speakSarvam(text, langCode = null, speaker = null, mySpeechId = null) {
@@ -261,7 +251,7 @@ class SpeechHelper {
     }
 
     if (!speaker) {
-      speaker = this.sarvamSpeaker || 'priya';
+      speaker = 'simran';
     }
 
     if (!langCode) {
