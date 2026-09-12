@@ -290,9 +290,16 @@ class DataStore {
   /* ---------------------------------------------------------
      Server Persistence & Synchronization
      --------------------------------------------------------- */
+  getApiEndpoint(path) {
+    if (typeof window !== 'undefined' && window.location && window.location.origin && window.location.origin.startsWith('http')) {
+      return path;
+    }
+    return 'http://localhost:8080' + path;
+  }
+
   async syncWithServer() {
     try {
-      const res = await fetch('/api/data');
+      const res = await fetch(this.getApiEndpoint('/api/data'));
       if (res.ok) {
         const remote = await res.json();
         if (remote && remote.patients && remote.patients.length > 0) {
@@ -327,7 +334,7 @@ class DataStore {
         lastSaved: new Date().toISOString()
       };
 
-      await fetch('/api/data', {
+      await fetch(this.getApiEndpoint('/api/data'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

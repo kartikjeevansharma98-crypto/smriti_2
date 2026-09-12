@@ -38,9 +38,16 @@ class SpeechHelper {
     }
   }
 
+  getApiEndpoint(path) {
+    if (typeof window !== 'undefined' && window.location && window.location.origin && window.location.origin.startsWith('http')) {
+      return path;
+    }
+    return 'http://localhost:8080' + path;
+  }
+
   async checkSarvamStatus() {
     try {
-      const res = await fetch('/api/sarvam/config');
+      const res = await fetch(this.getApiEndpoint('/api/sarvam/config'));
       if (res.ok) {
         const data = await res.json();
         if (data.has_key) {
@@ -74,7 +81,7 @@ class SpeechHelper {
     }
 
     try {
-      const res = await fetch('/api/sarvam/config', {
+      const res = await fetch(this.getApiEndpoint('/api/sarvam/config'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ api_key: this.sarvamApiKey, speaker: this.sarvamSpeaker })
@@ -276,7 +283,7 @@ class SpeechHelper {
         payload.api_key = this.sarvamApiKey;
       }
 
-      const res = await fetch('/api/sarvam/tts', {
+      const res = await fetch(this.getApiEndpoint('/api/sarvam/tts'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

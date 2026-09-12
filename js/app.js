@@ -404,7 +404,8 @@ document.addEventListener('DOMContentLoaded', () => {
         currentSimulatedOtp = String(Math.floor(1000 + Math.random() * 9000));
 
         // Dispatch to Server endpoint (logged in server console and sent via SMS gateway if configured)
-        fetch('/api/send-otp', {
+        const otpEndpoint = (window.smritiData && window.smritiData.getApiEndpoint) ? window.smritiData.getApiEndpoint('/api/send-otp') : 'http://localhost:8080/api/send-otp';
+        fetch(otpEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ phone: entered, otp: currentSimulatedOtp })
