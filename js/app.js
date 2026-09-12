@@ -200,14 +200,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (pinViewForgot) pinViewForgot.style.display = subview === 'forgot' ? 'flex' : 'none';
 
       if (subview === 'unlock') {
-        if (pinModalTitle) pinModalTitle.textContent = '🔒 Caregiver Security Access';
+        if (pinModalTitle) pinModalTitle.textContent = 'Caregiver Security Access';
         if (caretakerPinInput) {
           caretakerPinInput.value = '';
           setTimeout(() => caretakerPinInput.focus(), 100);
         }
         if (pinErrorMsg) pinErrorMsg.style.display = 'none';
       } else if (subview === 'change') {
-        if (pinModalTitle) pinModalTitle.textContent = '🔑 Change Caregiver Passcode';
+        if (pinModalTitle) pinModalTitle.textContent = 'Change Caregiver Passcode';
         if (changePinCurrent) changePinCurrent.value = '';
         if (changePinNew) changePinNew.value = '';
         if (changePinConfirm) changePinConfirm.value = '';
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (changePinSuccessMsg) changePinSuccessMsg.style.display = 'none';
         setTimeout(() => changePinCurrent && changePinCurrent.focus(), 100);
       } else if (subview === 'forgot') {
-        if (pinModalTitle) pinModalTitle.textContent = '📱 Reset Passcode via Phone';
+        if (pinModalTitle) pinModalTitle.textContent = 'Reset Passcode via Phone';
         if (forgotStep1) forgotStep1.style.display = 'flex';
         if (forgotStep2) forgotStep2.style.display = 'none';
         // Prefill registered caretaker phone number for user convenience
@@ -273,8 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const sendNotif = () => {
         try {
           new Notification("Smriti Caregiver Security", {
-            body: `Passcode reset code for ${phoneStr}: ${otp}`,
-            icon: "🌸"
+            body: `Passcode reset code for ${phoneStr}: ${otp}`
           });
         } catch(e) {}
       };
@@ -489,7 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Successfully reset
         window.smritiData.setCaregiverPin(next);
         if (window.smritiAudio) window.smritiAudio.playSuccess();
-        showToast('🎉 Passcode successfully reset! Unlocking Caregiver Portal.');
+        showToast('Passcode successfully reset! Unlocking Caregiver Portal.');
 
         closePinModal();
         window.smritiData.setUserRole('caregiver');
@@ -530,6 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function switchPortal(portal) {
+    if (window.smritiSpeech) window.smritiSpeech.stopAllAudio();
     state.currentPortal = portal;
     if (portal === 'caregiver') {
       document.body.classList.add('caregiver-mode');
@@ -619,29 +619,31 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function launchGame(gameType) {
+    if (window.smritiSpeech) window.smritiSpeech.stopAllAudio();
     gameModal.classList.add('active');
     gameContainer.innerHTML = '';
 
     const handleComplete = (score) => {
       refreshPatientStatus();
+      refreshCaregiverDashboard();
       showToast(`Game completed! Score: ${score}% logged.`);
     };
 
     switch (gameType) {
       case 'memory':
-        gameModalTitle.innerHTML = '<span>👓 Daily Essentials Match</span>';
+        gameModalTitle.innerHTML = '<svg class="icon-svg" style="width:22px;height:22px;color:var(--primary);margin-right:8px;" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg><span>Daily Essentials Match</span>';
         state.activeGame = new window.MemoryGame('game-container', () => closeGameModal());
         break;
       case 'sequencing':
-        gameModalTitle.innerHTML = '<span>📋 Daily Routine Sequencing</span>';
+        gameModalTitle.innerHTML = '<svg class="icon-svg" style="width:22px;height:22px;color:var(--primary);margin-right:8px;" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Daily Routine Sequencing</span>';
         state.activeGame = new window.SequencingGame('game-container', () => closeGameModal());
         break;
       case 'recognition':
-        gameModalTitle.innerHTML = '<span>💡 Everyday Object Recognition</span>';
+        gameModalTitle.innerHTML = '<svg class="icon-svg" style="width:22px;height:22px;color:var(--primary);margin-right:8px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>Everyday Object Recognition</span>';
         state.activeGame = new window.RecognitionGame('game-container', () => closeGameModal());
         break;
       case 'garden':
-        gameModalTitle.innerHTML = '<span>🌸 Calming Focus Garden</span>';
+        gameModalTitle.innerHTML = '<svg class="icon-svg" style="width:22px;height:22px;color:var(--primary);margin-right:8px;" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/></svg><span>Calming Focus Garden</span>';
         state.activeGame = new window.FocusGardenGame('game-container', () => closeGameModal());
         break;
     }
@@ -652,17 +654,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function closeGameModal() {
+    if (window.smritiSpeech) window.smritiSpeech.stopAllAudio();
     gameModal.classList.remove('active');
     gameContainer.innerHTML = '';
     state.activeGame = null;
     refreshPatientStatus();
-    if (state.currentPortal === 'caregiver') {
-      refreshCaregiverDashboard();
-    }
+    refreshCaregiverDashboard();
   }
 
   function refreshPatientStatus() {
     const today = window.smritiData.getTodayRecord();
+    const isHi = window.smritiI18n && window.smritiI18n.getLanguage() === 'hi';
     const pills = {
       memory: document.getElementById('pill-game-memory'),
       sequencing: document.getElementById('pill-game-sequencing'),
@@ -670,22 +672,21 @@ document.addEventListener('DOMContentLoaded', () => {
       garden: document.getElementById('pill-game-garden')
     };
 
-    if (pills.memory && today.memoryScore !== null && today.memoryScore !== undefined) {
-      pills.memory.textContent = `Completed (${today.memoryScore}%)`;
-      pills.memory.classList.add('done');
-    }
-    if (pills.sequencing && today.sequencingScore !== null && today.sequencingScore !== undefined) {
-      pills.sequencing.textContent = `Completed (${today.sequencingScore}%)`;
-      pills.sequencing.classList.add('done');
-    }
-    if (pills.recognition && today.recognitionScore !== null && today.recognitionScore !== undefined) {
-      pills.recognition.textContent = `Completed (${today.recognitionScore}%)`;
-      pills.recognition.classList.add('done');
-    }
-    if (pills.garden && today.gardenScore !== null && today.gardenScore !== undefined) {
-      pills.garden.textContent = `Completed (${today.gardenScore}%)`;
-      pills.garden.classList.add('done');
-    }
+    const updatePill = (pill, score) => {
+      if (!pill) return;
+      if (score !== null && score !== undefined) {
+        pill.textContent = isHi ? `पूर्ण (${score}%)` : `Completed (${score}%)`;
+        pill.classList.add('done');
+      } else {
+        pill.textContent = isHi ? 'शुरू करें' : 'Ready to Play';
+        pill.classList.remove('done');
+      }
+    };
+
+    updatePill(pills.memory, today.memoryScore);
+    updatePill(pills.sequencing, today.sequencingScore);
+    updatePill(pills.recognition, today.recognitionScore);
+    updatePill(pills.garden, today.gardenScore);
   }
 
   /* ---------------------------------------------------------
@@ -829,17 +830,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const chips = chipsBar.querySelectorAll('[data-chip]');
         chips.forEach(chip => {
           const type = chip.getAttribute('data-chip');
-          if (type === 'call_caregiver') chip.textContent = isHi ? `📞 कॉल करें: ${cgName}` : `📞 Call ${cgName}`;
-          if (type === 'call_doctor') chip.textContent = isHi ? '🩺 डॉक्टर को कॉल करें' : '🩺 Call Doctor';
-          if (type === 'location') chip.textContent = isHi ? '📍 मैं कहाँ हूँ?' : '📍 Where am I?';
+          if (type === 'call_caregiver') chip.textContent = isHi ? `कॉल करें: ${cgName}` : `Call ${cgName}`;
+          if (type === 'call_doctor') chip.textContent = isHi ? 'डॉक्टर को कॉल करें' : 'Call Doctor';
+          if (type === 'location') chip.textContent = isHi ? 'मैं कहाँ हूँ?' : 'Where am I?';
           if (type === 'date') chip.textContent = isHi ? '⏰ आज कौन सा दिन है?' : '⏰ What day is today?';
-          if (type === 'go_garden') chip.textContent = isHi ? '🌸 फूलों का बगीचा' : '🌸 Visit Garden';
-          if (type === 'comfort') chip.textContent = isHi ? '💖 मुझे थोड़ी चिंता हो रही है' : '💖 I feel worried';
+          if (type === 'go_garden') chip.textContent = isHi ? 'फूलों का बगीचा' : 'Visit Garden';
+          if (type === 'comfort') chip.textContent = isHi ? 'मुझे थोड़ी चिंता हो रही है' : 'I feel worried';
         });
       }
     }
 
     const openChat = () => {
+      if (window.smritiSpeech) window.smritiSpeech.stopAllAudio();
       syncChatbotUI();
       renderMessages();
       chatbotModal.classList.add('active');
@@ -847,6 +849,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const closeChat = () => {
+      if (window.smritiSpeech) window.smritiSpeech.stopAllAudio();
       chatbotModal.classList.remove('active');
     };
 
@@ -931,7 +934,7 @@ document.addEventListener('DOMContentLoaded', () => {
           bot.messages.push({ 
             sender: 'bot', 
             text: fallbackReply, 
-            actions: [{ label: isHi ? "📞 देखभालकर्ता को कॉल करें" : "📞 Call Caretaker", type: "call_caregiver" }] 
+            actions: [{ label: isHi ? "देखभालकर्ता को कॉल करें" : "Call Caretaker", type: "call_caregiver" }] 
           });
           renderMessages();
           window.smritiSpeech.speak(fallbackReply);
@@ -992,7 +995,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (toggleKeyBtn && keyInput) {
       toggleKeyBtn.addEventListener('click', () => {
         keyInput.type = keyInput.type === 'password' ? 'text' : 'password';
-        toggleKeyBtn.textContent = keyInput.type === 'password' ? '👁️' : '🙈';
+        toggleKeyBtn.textContent = keyInput.type === 'password' ? 'Show/Hide' : 'Hide';
       });
     }
 
@@ -1049,13 +1052,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (voiceLabel) {
           const capSpeaker = speaker.charAt(0).toUpperCase() + speaker.slice(1);
-          voiceLabel.textContent = `🎙️ Sarvam AI: ${capSpeaker} (Active)`;
+          voiceLabel.textContent = `Sarvam AI: ${capSpeaker} (Active)`;
         }
         if (statusBanner) {
           statusBanner.style.background = '#f0fdf4';
           statusBanner.style.borderColor = '#86efac';
         }
-        if (statusIcon) statusIcon.textContent = '🟢';
+        if (statusIcon) statusIcon.textContent = '●';
         if (statusHeading) statusHeading.textContent = 'Sarvam AI Indic Neural Voice Connected';
         if (statusDesc) statusDesc.textContent = `Active Speaker: ${speaker.toUpperCase()} | Ultra-natural Indic Hindi & English Voice`;
         if (badgePill) {
@@ -1069,13 +1072,13 @@ document.addEventListener('DOMContentLoaded', () => {
           voiceDot.style.boxShadow = '0 0 8px rgba(245,158,11,0.8)';
         }
         if (voiceLabel) {
-          voiceLabel.textContent = `🎙️ Sarvam Voice: Connect Key`;
+          voiceLabel.textContent = `Sarvam Voice: Connect Key`;
         }
         if (statusBanner) {
           statusBanner.style.background = '#fffbeb';
           statusBanner.style.borderColor = '#fde68a';
         }
-        if (statusIcon) statusIcon.textContent = '🟡';
+        if (statusIcon) statusIcon.textContent = '○';
         if (statusHeading) statusHeading.textContent = 'Awaiting Sarvam AI Subscription Key';
         if (statusDesc) statusDesc.textContent = 'Enter your API key below to activate ultra-natural Indic voices.';
         if (badgePill) {
@@ -1130,7 +1133,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         } finally {
           testVoiceBtn.disabled = false;
-          testVoiceBtn.innerHTML = '<span>🔊</span> Listen Sample';
+          testVoiceBtn.innerHTML = 'Listen Sample';
         }
       });
     }
@@ -1141,7 +1144,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.smritiSpeech) {
           window.smritiSpeech.useSarvam = false;
           showToast('Switched to local device speech voice.');
-          if (voiceLabel) voiceLabel.textContent = '🔊 Local Voice Mode';
+          if (voiceLabel) voiceLabel.textContent = 'Local Voice Mode';
           if (voiceDot) voiceDot.style.background = '#94a3b8';
           closeModal();
         }
@@ -1335,11 +1338,11 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       const moodEmoji = {
-        happy: '😊 Happy',
-        calm: '😌 Calm',
-        neutral: '😐 Neutral',
-        tired: '😔 Tired'
-      }[rec.mood] || '😊 Happy';
+        happy: 'Happy',
+        calm: 'Calm',
+        neutral: 'Neutral',
+        tired: 'Tired'
+      }[rec.mood] || 'Happy';
 
       return `
         <tr>
@@ -1384,10 +1387,10 @@ document.addEventListener('DOMContentLoaded', () => {
       state.isVoiceEnabled = window.smritiSpeech.toggleVoice();
       const isHi = window.smritiI18n && window.smritiI18n.getLanguage() === 'hi';
       if (state.isVoiceEnabled) {
-        toggleVoiceBtn.innerHTML = isHi ? '🔊 आवाज़ चालू' : '🔊 Voice On';
+        toggleVoiceBtn.innerHTML = isHi ? 'आवाज़ चालू' : 'Voice On';
         showToast(isHi ? 'ऑडियो वाचन सक्षम किया गया' : 'Audio reading enabled');
       } else {
-        toggleVoiceBtn.innerHTML = isHi ? '🔇 आवाज़ बंद' : '🔇 Voice Off';
+        toggleVoiceBtn.innerHTML = isHi ? 'आवाज़ बंद' : 'Voice Off';
         showToast(isHi ? 'ऑडियो वाचन म्यूट किया गया' : 'Audio reading muted');
       }
     });
@@ -1427,11 +1430,11 @@ document.addEventListener('DOMContentLoaded', () => {
       // Update voice & contrast button labels
       if (toggleVoiceBtn) {
         toggleVoiceBtn.innerHTML = state.isVoiceEnabled 
-          ? (lang === 'hi' ? '🔊 आवाज़ चालू' : '🔊 Voice On')
-          : (lang === 'hi' ? '🔇 आवाज़ बंद' : '🔇 Voice Off');
+          ? (lang === 'hi' ? 'आवाज़ चालू' : 'Voice On')
+          : (lang === 'hi' ? 'आवाज़ बंद' : 'Voice Off');
       }
       if (toggleContrastBtn) {
-        toggleContrastBtn.innerHTML = lang === 'hi' ? '👁️ उच्च कंट्रास्ट' : '👁️ High Contrast';
+        toggleContrastBtn.innerHTML = lang === 'hi' ? 'Show/Hide उच्च कंट्रास्ट' : 'Show/Hide High Contrast';
       }
     };
 
@@ -1441,10 +1444,10 @@ document.addEventListener('DOMContentLoaded', () => {
       syncButtonsAndUI(lang);
 
       if (lang === 'hi') {
-        showToast('भाषा बदलकर हिंदी कर दी गई है 🇮🇳');
+        showToast('भाषा बदलकर हिंदी कर दी गई है ');
         window.smritiSpeech.speak('नमस्ते! स्मृति में आपका स्वागत है। आपकी दैनिक गतिविधियों में हम आपके साथ हैं।');
       } else {
-        showToast('Language changed to English 🇬🇧');
+        showToast('Language changed to English ');
         window.smritiSpeech.speak('Language changed to English. Welcome back.');
       }
     };
@@ -1789,7 +1792,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       container.innerHTML = contributions.map(item => {
         const tagClass = item.type === 'game' ? 'game' : item.type === 'volunteer' ? 'volunteer' : 'tip';
-        const typeIcon = item.type === 'game' ? '🎮 Game' : item.type === 'volunteer' ? '🙋 Volunteer' : '💡 Tip';
+        const typeIcon = item.type === 'game' ? 'Game' : item.type === 'volunteer' ? 'Volunteer' : 'Tip';
 
         return `
           <div class="community-card" data-id="${item.id}">
@@ -1833,9 +1836,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function listenForDataUpdates() {
     window.addEventListener('smriti_score_updated', () => {
       refreshPatientStatus();
-      if (state.currentPortal === 'caregiver') {
-        refreshCaregiverDashboard();
-      }
+      refreshCaregiverDashboard();
     });
 
     window.addEventListener('smriti_mood_updated', () => {
@@ -1866,7 +1867,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const toast = document.createElement('div');
     toast.className = 'toast';
-    toast.innerHTML = `<span>💬</span><span>${message}</span>`;
+    toast.innerHTML = `<span>${message}</span>`;
     container.appendChild(toast);
 
     setTimeout(() => {

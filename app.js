@@ -631,19 +631,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     switch (gameType) {
       case 'memory':
-        gameModalTitle.innerHTML = '<span>Daily Essentials Match</span>';
+        gameModalTitle.innerHTML = '<svg class="icon-svg" style="width:22px;height:22px;color:var(--primary);margin-right:8px;" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg><span>Daily Essentials Match</span>';
         state.activeGame = new window.MemoryGame('game-container', () => closeGameModal());
         break;
       case 'sequencing':
-        gameModalTitle.innerHTML = '<span>Daily Routine Sequencing</span>';
+        gameModalTitle.innerHTML = '<svg class="icon-svg" style="width:22px;height:22px;color:var(--primary);margin-right:8px;" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Daily Routine Sequencing</span>';
         state.activeGame = new window.SequencingGame('game-container', () => closeGameModal());
         break;
       case 'recognition':
-        gameModalTitle.innerHTML = '<span>Everyday Object Recognition</span>';
+        gameModalTitle.innerHTML = '<svg class="icon-svg" style="width:22px;height:22px;color:var(--primary);margin-right:8px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>Everyday Object Recognition</span>';
         state.activeGame = new window.RecognitionGame('game-container', () => closeGameModal());
         break;
       case 'garden':
-        gameModalTitle.innerHTML = '<span>Calming Focus Garden</span>';
+        gameModalTitle.innerHTML = '<svg class="icon-svg" style="width:22px;height:22px;color:var(--primary);margin-right:8px;" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/></svg><span>Calming Focus Garden</span>';
         state.activeGame = new window.FocusGardenGame('game-container', () => closeGameModal());
         break;
     }
