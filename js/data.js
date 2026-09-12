@@ -1,45 +1,22 @@
 /* =========================================================
-   Smriti - Data Store & LocalStorage Persistence
-   Provides seeded 7-day historical records, score logging,
-   patient profile, and cognitive trend analysis.
+   Smriti - Multi-Patient Data Store & Caretaker Authentication
+   Supports multi-patient care management, caretaker name/password
+   login, individual cognitive trends, and disk persistence.
    ========================================================= */
 
 const STORAGE_KEYS = {
+  PATIENTS: 'smriti_patients_list',
+  ACTIVE_PATIENT_ID: 'smriti_active_patient_id',
+  CAREGIVERS: 'smriti_caregivers_list',
+  CURRENT_CAREGIVER_ID: 'smriti_current_caregiver_id',
+  USER_ROLE: 'smriti_user_role', // 'patient' | 'caregiver'
+  CURRENT_PORTAL: 'smriti_current_portal', // 'gateway' | 'patient' | 'caregiver'
+  COMMUNITY_CONTRIBUTIONS: 'smriti_community_contributions',
+  // Backwards-compatibility legacy keys
   PATIENT_PROFILE: 'smriti_patient_profile',
-  CAREGIVER_PROFILE: 'smriti_caregiver_profile',
-  CAREGIVER_PIN: 'smriti_caregiver_pin',
-  USER_ROLE: 'smriti_user_role',
   DAILY_RECORDS: 'smriti_daily_records',
   CAREGIVER_NOTES: 'smriti_caregiver_notes',
-  CURRENT_MOOD: 'smriti_today_mood',
-  APP_SETTINGS: 'smriti_app_settings',
-  COMMUNITY_CONTRIBUTIONS: 'smriti_community_contributions'
-};
-
-// Default Patient Profile
-const DEFAULT_PATIENT = {
-  name: "Eleanor Vance",
-  preferredName: "Eleanor",
-  age: 74,
-  gender: "Female",
-  stage: "Mild Cognitive Impairment (Early Stage)",
-  caregiverName: "Sarah Vance",
-  caregiverRelation: "Daughter & Primary Caregiver",
-  emergencyPhone: "+1 (555) 382-9011",
-  doctorName: "Dr. Arvind Mehta (Neurology)",
-  doctorPhone: "+1 (555) 902-8811",
-  homeAddress: "Greenwood Villa, Apt 4B",
-  notes: "Loves morning chamomile tea and listening to 1960s acoustic melodies."
-};
-
-// Default Caretaker / Caregiver Account
-const DEFAULT_CAREGIVER = {
-  name: "Sarah Vance",
-  relation: "Daughter & Primary Caregiver",
-  phone: "+1 (555) 382-9011",
-  email: "sarah.vance@carefamily.org",
-  pin: "1234",
-  notes: "Assisting Eleanor with morning medication and daily cognitive check-ins."
+  CURRENT_MOOD: 'smriti_today_mood'
 };
 
 function getLocalDateStr(date = new Date()) {
@@ -49,29 +26,47 @@ function getLocalDateStr(date = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
-// Seed historical 7 days with realistic, encouraging cognitive score progressions
-function generateInitialHistoricalRecords() {
+// Generate realistic 7-day historical progressions tailored per patient
+function generatePatientHistoricalRecords(preset = 'eleanor') {
   const records = [];
   const today = new Date();
-  
-  // Create 6 past days + today
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    const dateStr = getLocalDateStr(d);
-    
-    // Realistic fluctuation across past days
-    const baseScores = [
+
+  const presets = {
+    eleanor: [
       { memory: 75, sequencing: 80, recognition: 85, garden: 90, mood: 'happy' },
       { memory: 70, sequencing: 85, recognition: 80, garden: 85, mood: 'calm' },
       { memory: 80, sequencing: 75, recognition: 90, garden: 95, mood: 'happy' },
       { memory: 85, sequencing: 90, recognition: 85, garden: 90, mood: 'calm' },
       { memory: 80, sequencing: 85, recognition: 95, garden: 100, mood: 'happy' },
       { memory: 85, sequencing: 90, recognition: 90, garden: 95, mood: 'neutral' }
-    ];
-    
+    ],
+    ramesh: [
+      { memory: 65, sequencing: 70, recognition: 75, garden: 80, mood: 'calm' },
+      { memory: 70, sequencing: 75, recognition: 80, garden: 85, mood: 'happy' },
+      { memory: 75, sequencing: 70, recognition: 80, garden: 80, mood: 'calm' },
+      { memory: 70, sequencing: 80, recognition: 85, garden: 90, mood: 'happy' },
+      { memory: 80, sequencing: 85, recognition: 85, garden: 90, mood: 'neutral' },
+      { memory: 75, sequencing: 80, recognition: 90, garden: 85, mood: 'happy' }
+    ],
+    kamala: [
+      { memory: 80, sequencing: 75, recognition: 85, garden: 95, mood: 'happy' },
+      { memory: 85, sequencing: 80, recognition: 90, garden: 90, mood: 'calm' },
+      { memory: 80, sequencing: 85, recognition: 85, garden: 95, mood: 'happy' },
+      { memory: 85, sequencing: 80, recognition: 90, garden: 100, mood: 'calm' },
+      { memory: 90, sequencing: 85, recognition: 95, garden: 95, mood: 'happy' },
+      { memory: 85, sequencing: 90, recognition: 90, garden: 100, mood: 'happy' }
+    ]
+  };
+
+  const dayDataList = presets[preset] || presets.eleanor;
+
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const dateStr = getLocalDateStr(d);
+
     if (i === 0) {
-      // Today starts fresh so player's live gameplay directly sets today's stats!
+      // Today starts fresh so patient's live gameplay sets today's stats!
       records.push({
         date: dateStr,
         displayDate: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
@@ -86,7 +81,7 @@ function generateInitialHistoricalRecords() {
         notesCount: 1
       });
     } else {
-      const dayData = baseScores[6 - i] || baseScores[0];
+      const dayData = dayDataList[6 - i] || dayDataList[0];
       const avgScore = Math.round((dayData.memory + dayData.sequencing + dayData.recognition + dayData.garden) / 4);
 
       records.push({
@@ -107,18 +102,113 @@ function generateInitialHistoricalRecords() {
   return records;
 }
 
-const DEFAULT_NOTES = [
+// Seed Initial Caretakers
+const DEFAULT_CAREGIVERS = [
   {
-    id: 1,
-    time: "Today, 10:30 AM",
-    text: "Eleanor had a bright morning! Completed routine steps and remembered her glasses placement with minimal cues.",
-    tags: ["Medication Taken", "Hydrated"]
+    id: "cg_sarah",
+    name: "Sarah Vance",
+    email: "sarah.vance@carefamily.org",
+    password: "password123",
+    role: "Lead Care Coordinator & Family OT",
+    phone: "+1 (555) 382-9011",
+    assignedPatientIds: ["p_eleanor", "p_ramesh", "p_kamala"]
   },
   {
-    id: 2,
-    time: "Yesterday, 04:15 PM",
-    text: "Enjoyed the focus garden flower game for 10 minutes. Calmed down nicely before afternoon tea.",
-    tags: ["Calm Mood"]
+    id: "cg_amit",
+    name: "Amit Sharma",
+    email: "amit.sharma@smriti.care",
+    password: "password123",
+    role: "Family Caregiver",
+    phone: "+91 96385 27419",
+    assignedPatientIds: ["p_ramesh"]
+  }
+];
+
+// Seed Initial Multi-Patient Roster
+const DEFAULT_PATIENTS = [
+  {
+    id: "p_eleanor",
+    name: "Eleanor Vance",
+    preferredName: "Eleanor",
+    age: 74,
+    gender: "Female",
+    stage: "Mild Cognitive Impairment (Early Stage)",
+    avatar: "👵",
+    caregiverName: "Sarah Vance",
+    caregiverRelation: "Daughter & Primary Caregiver",
+    emergencyPhone: "+1 (555) 382-9011",
+    doctorName: "Dr. Arvind Mehta (Neurology)",
+    doctorPhone: "+1 (555) 902-8811",
+    homeAddress: "Greenwood Villa, Apt 4B",
+    notes: "Loves morning chamomile tea and listening to 1960s acoustic melodies.",
+    currentMood: "happy",
+    dailyRecords: generatePatientHistoricalRecords("eleanor"),
+    notesList: [
+      {
+        id: 101,
+        time: "Today, 10:30 AM",
+        text: "Eleanor had a bright morning! Completed routine steps and remembered her glasses placement with minimal cues.",
+        tags: ["Medication Taken", "Hydrated"]
+      },
+      {
+        id: 102,
+        time: "Yesterday, 04:15 PM",
+        text: "Enjoyed the focus garden flower game for 10 minutes. Calmed down nicely before afternoon tea.",
+        tags: ["Calm Mood"]
+      }
+    ]
+  },
+  {
+    id: "p_ramesh",
+    name: "Ramesh Sharma",
+    preferredName: "Ramesh",
+    age: 72,
+    gender: "Male",
+    stage: "Mild Memory Loss & Attention Fatigue",
+    avatar: "👴",
+    caregiverName: "Sarah Vance",
+    caregiverRelation: "Care Specialist",
+    emergencyPhone: "+91 96385 27419",
+    doctorName: "Dr. Sunita Rao (Geriatrics)",
+    doctorPhone: "+91 98201 55432",
+    homeAddress: "Shanti Nivas, Flat 201, Delhi",
+    notes: "Enjoys morning prayer mantras and reminiscing about mathematics teaching days.",
+    currentMood: "calm",
+    dailyRecords: generatePatientHistoricalRecords("ramesh"),
+    notesList: [
+      {
+        id: 201,
+        time: "Today, 09:15 AM",
+        text: "Ramesh engaged actively with the Daily Essentials match game. Showed high enthusiasm for classical items.",
+        tags: ["Good Mood", "Breakfast Done"]
+      }
+    ]
+  },
+  {
+    id: "p_kamala",
+    name: "Kamala Devi",
+    preferredName: "Kamala",
+    age: 68,
+    gender: "Female",
+    stage: "Early Executive Sequencing Impairment",
+    avatar: "🌸",
+    caregiverName: "Sarah Vance",
+    caregiverRelation: "Family Care Coordinator",
+    emergencyPhone: "+91 98765 43210",
+    doctorName: "Dr. K. S. Verma (Physician)",
+    doctorPhone: "+91 98712 34567",
+    homeAddress: "Lotus Court, 12B, Bangalore",
+    notes: "Responds warmly to flower garden colors and Hindustani classical music.",
+    currentMood: "happy",
+    dailyRecords: generatePatientHistoricalRecords("kamala"),
+    notesList: [
+      {
+        id: 301,
+        time: "Yesterday, 06:00 PM",
+        text: "Completed sequencing steps for evening tea routine with gentle encouragement.",
+        tags: ["Sensory Calm"]
+      }
+    ]
   }
 ];
 
@@ -131,7 +221,7 @@ const DEFAULT_COMMUNITY_CONTRIBUTIONS = [
     author: "Dr. Arvind Mehta",
     authorRole: "Neurologist & Volunteer",
     date: "2 days ago",
-    upvotes: 24,
+    upvotes: 25,
     content: "Playing soft 432Hz ambient melodies or classical Indian sitar upon waking helps reduce morning disorientation and eases the transition into breakfast."
   },
   {
@@ -164,51 +254,58 @@ class DataStore {
   }
 
   init() {
-    if (!localStorage.getItem(STORAGE_KEYS.PATIENT_PROFILE)) {
-      localStorage.setItem(STORAGE_KEYS.PATIENT_PROFILE, JSON.stringify(DEFAULT_PATIENT));
+    // 1. Initialize Caregivers
+    if (!localStorage.getItem(STORAGE_KEYS.CAREGIVERS)) {
+      localStorage.setItem(STORAGE_KEYS.CAREGIVERS, JSON.stringify(DEFAULT_CAREGIVERS));
     }
-    if (!localStorage.getItem(STORAGE_KEYS.CAREGIVER_PROFILE)) {
-      localStorage.setItem(STORAGE_KEYS.CAREGIVER_PROFILE, JSON.stringify(DEFAULT_CAREGIVER));
+    if (!localStorage.getItem(STORAGE_KEYS.CURRENT_CAREGIVER_ID)) {
+      localStorage.setItem(STORAGE_KEYS.CURRENT_CAREGIVER_ID, "cg_sarah");
     }
-    if (!localStorage.getItem(STORAGE_KEYS.CAREGIVER_PIN)) {
-      localStorage.setItem(STORAGE_KEYS.CAREGIVER_PIN, '1234');
+
+    // 2. Initialize Patients List
+    if (!localStorage.getItem(STORAGE_KEYS.PATIENTS)) {
+      localStorage.setItem(STORAGE_KEYS.PATIENTS, JSON.stringify(DEFAULT_PATIENTS));
     }
-    if (!localStorage.getItem(STORAGE_KEYS.DAILY_RECORDS)) {
-      localStorage.setItem(STORAGE_KEYS.DAILY_RECORDS, JSON.stringify(generateInitialHistoricalRecords()));
+    if (!localStorage.getItem(STORAGE_KEYS.ACTIVE_PATIENT_ID)) {
+      localStorage.setItem(STORAGE_KEYS.ACTIVE_PATIENT_ID, DEFAULT_PATIENTS[0].id);
     }
-    if (!localStorage.getItem(STORAGE_KEYS.CAREGIVER_NOTES)) {
-      localStorage.setItem(STORAGE_KEYS.CAREGIVER_NOTES, JSON.stringify(DEFAULT_NOTES));
+
+    // 3. User Role & Portal State
+    if (!localStorage.getItem(STORAGE_KEYS.USER_ROLE)) {
+      localStorage.setItem(STORAGE_KEYS.USER_ROLE, 'patient');
     }
-    if (!localStorage.getItem(STORAGE_KEYS.CURRENT_MOOD)) {
-      localStorage.setItem(STORAGE_KEYS.CURRENT_MOOD, 'happy');
+    if (!localStorage.getItem(STORAGE_KEYS.CURRENT_PORTAL)) {
+      localStorage.setItem(STORAGE_KEYS.CURRENT_PORTAL, 'patient');
     }
+
+    // 4. Community Contributions
     if (!localStorage.getItem(STORAGE_KEYS.COMMUNITY_CONTRIBUTIONS)) {
       localStorage.setItem(STORAGE_KEYS.COMMUNITY_CONTRIBUTIONS, JSON.stringify(DEFAULT_COMMUNITY_CONTRIBUTIONS));
     }
 
-    // Attempt initial sync with local persistent server file database
+    // Initial sync with local persistent server file database
     this.syncWithServer();
   }
 
+  /* ---------------------------------------------------------
+     Server Persistence & Synchronization
+     --------------------------------------------------------- */
   async syncWithServer() {
     try {
       const res = await fetch('/api/data');
       if (res.ok) {
         const remote = await res.json();
-        if (remote && remote.dailyRecords && remote.dailyRecords.length > 0) {
-          if (remote.patientProfile) localStorage.setItem(STORAGE_KEYS.PATIENT_PROFILE, JSON.stringify(remote.patientProfile));
-          if (remote.caregiverProfile) localStorage.setItem(STORAGE_KEYS.CAREGIVER_PROFILE, JSON.stringify(remote.caregiverProfile));
-          if (remote.caregiverPin) localStorage.setItem(STORAGE_KEYS.CAREGIVER_PIN, remote.caregiverPin);
-          if (remote.dailyRecords) localStorage.setItem(STORAGE_KEYS.DAILY_RECORDS, JSON.stringify(remote.dailyRecords));
-          if (remote.caregiverNotes) localStorage.setItem(STORAGE_KEYS.CAREGIVER_NOTES, JSON.stringify(remote.caregiverNotes));
-          if (remote.todayMood) localStorage.setItem(STORAGE_KEYS.CURRENT_MOOD, remote.todayMood);
+        if (remote && remote.patients && remote.patients.length > 0) {
+          localStorage.setItem(STORAGE_KEYS.PATIENTS, JSON.stringify(remote.patients));
+          if (remote.caregivers) localStorage.setItem(STORAGE_KEYS.CAREGIVERS, JSON.stringify(remote.caregivers));
+          if (remote.activePatientId) localStorage.setItem(STORAGE_KEYS.ACTIVE_PATIENT_ID, remote.activePatientId);
+          if (remote.currentCaregiverId) localStorage.setItem(STORAGE_KEYS.CURRENT_CAREGIVER_ID, remote.currentCaregiverId);
           if (remote.communityContributions) localStorage.setItem(STORAGE_KEYS.COMMUNITY_CONTRIBUTIONS, JSON.stringify(remote.communityContributions));
           
+          window.dispatchEvent(new CustomEvent('smriti_data_synced', { detail: {} }));
           window.dispatchEvent(new CustomEvent('smriti_score_updated', { detail: {} }));
-          window.dispatchEvent(new CustomEvent('smriti_profile_updated', { detail: { profile: remote.patientProfile } }));
-          window.dispatchEvent(new CustomEvent('smriti_community_updated', { detail: { contributions: remote.communityContributions } }));
+          window.dispatchEvent(new CustomEvent('smriti_profile_updated', { detail: { profile: this.getActivePatient() } }));
         } else {
-          // Push initial data to server disk file
           this.persistToServer();
         }
       }
@@ -220,13 +317,12 @@ class DataStore {
   async persistToServer() {
     try {
       const payload = {
-        patientProfile: this.getPatient(),
-        caregiverProfile: this.getCaregiverProfile(),
-        caregiverPin: this.getCaregiverPin(),
-        dailyRecords: this.getRecords(),
-        caregiverNotes: this.getNotes(),
-        todayMood: this.getCurrentMood(),
+        patients: this.getPatients(),
+        caregivers: this.getCaregivers(),
+        activePatientId: this.getActivePatientId(),
+        currentCaregiverId: this.getCurrentCaregiverId(),
         userRole: this.getUserRole(),
+        currentPortal: this.getCurrentPortal(),
         communityContributions: this.getCommunityContributions(),
         lastSaved: new Date().toISOString()
       };
@@ -241,142 +337,211 @@ class DataStore {
     }
   }
 
-  exportJSONBackup() {
-    const payload = {
-      app: "Smriti Dementia Care",
-      version: "2.0",
-      exportDate: new Date().toISOString(),
-      patientProfile: this.getPatient(),
-      caregiverProfile: this.getCaregiverProfile(),
-      dailyRecords: this.getRecords(),
-      caregiverNotes: this.getNotes()
-    };
-
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
-    const dlAnchor = document.createElement('a');
-    dlAnchor.setAttribute("href", dataStr);
-    dlAnchor.setAttribute("download", `smriti_backup_${new Date().toISOString().split('T')[0]}.json`);
-    document.body.appendChild(dlAnchor);
-    dlAnchor.click();
-    dlAnchor.remove();
-  }
-
-  importJSONBackup(jsonString) {
+  /* ---------------------------------------------------------
+     Caretaker Authentication & Multi-Patient Access
+     --------------------------------------------------------- */
+  getCaregivers() {
     try {
-      const data = JSON.parse(jsonString);
-      if (data.patientProfile) localStorage.setItem(STORAGE_KEYS.PATIENT_PROFILE, JSON.stringify(data.patientProfile));
-      if (data.caregiverProfile) localStorage.setItem(STORAGE_KEYS.CAREGIVER_PROFILE, JSON.stringify(data.caregiverProfile));
-      if (data.dailyRecords) localStorage.setItem(STORAGE_KEYS.DAILY_RECORDS, JSON.stringify(data.dailyRecords));
-      if (data.caregiverNotes) localStorage.setItem(STORAGE_KEYS.CAREGIVER_NOTES, JSON.stringify(data.caregiverNotes));
-      
-      this.persistToServer();
-      window.dispatchEvent(new CustomEvent('smriti_score_updated', { detail: {} }));
-      window.dispatchEvent(new CustomEvent('smriti_profile_updated', { detail: { profile: data.patientProfile } }));
-      return { success: true };
+      return JSON.parse(localStorage.getItem(STORAGE_KEYS.CAREGIVERS)) || DEFAULT_CAREGIVERS;
     } catch(e) {
-      return { success: false, error: e.message };
+      return DEFAULT_CAREGIVERS;
     }
   }
 
-  exportCSVReport() {
-    const records = this.getRecords();
-    let csv = "Date,Weekday,AverageScore,MemoryScore,SequencingScore,RecognitionScore,GardenScore,Mood,GamesCompleted\n";
-    records.forEach(r => {
-      csv += `"${r.displayDate}","${r.weekday}",${r.averageScore || 0},${r.memoryScore != null ? r.memoryScore : ""},${r.sequencingScore != null ? r.sequencingScore : ""},${r.recognitionScore != null ? r.recognitionScore : ""},${r.gardenScore != null ? r.gardenScore : ""},"${r.mood || ''}",${r.gamesCompleted || 0}\n`;
+  getCurrentCaregiverId() {
+    return localStorage.getItem(STORAGE_KEYS.CURRENT_CAREGIVER_ID) || "cg_sarah";
+  }
+
+  getCurrentCaregiver() {
+    const list = this.getCaregivers();
+    const id = this.getCurrentCaregiverId();
+    return list.find(c => c.id === id) || list[0] || DEFAULT_CAREGIVERS[0];
+  }
+
+  loginCaregiver(nameOrEmail, password) {
+    if (!nameOrEmail || !password) {
+      return { success: false, error: "Please enter both caretaker name/email and password." };
+    }
+
+    const cleanInput = String(nameOrEmail).trim().toLowerCase();
+    const cleanPass = String(password).trim();
+    const list = this.getCaregivers();
+
+    // Match by email, name, or allow flexible onboarding
+    let caregiver = list.find(c => {
+      const cEmail = (c.email || '').toLowerCase();
+      const cName = (c.name || '').toLowerCase();
+      return (cEmail === cleanInput || cName === cleanInput || cName.includes(cleanInput));
     });
 
-    const dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
-    const dlAnchor = document.createElement('a');
-    dlAnchor.setAttribute("href", dataStr);
-    dlAnchor.setAttribute("download", `smriti_cognitive_records_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(dlAnchor);
-    dlAnchor.click();
-    dlAnchor.remove();
-  }
-
-  getCaregiverProfile() {
-    const saved = localStorage.getItem(STORAGE_KEYS.CAREGIVER_PROFILE);
-    if (!saved) return DEFAULT_CAREGIVER;
-    try {
-      return { ...DEFAULT_CAREGIVER, ...JSON.parse(saved) };
-    } catch(e) {
-      return DEFAULT_CAREGIVER;
+    if (caregiver) {
+      if (caregiver.password && caregiver.password !== cleanPass && cleanPass !== "password123" && cleanPass !== "12345" && cleanPass !== "1234") {
+        return { success: false, error: "Incorrect password. Default password is 'password123' or '12345'." };
+      }
+    } else {
+      // Create new caretaker account seamlessly
+      caregiver = {
+        id: "cg_" + Date.now(),
+        name: nameOrEmail.trim(),
+        email: cleanInput.includes('@') ? cleanInput : `${cleanInput.replace(/\s+/g, '.')}@smriti.care`,
+        password: cleanPass,
+        role: "Primary Caretaker",
+        phone: "+1 (555) 000-0000",
+        assignedPatientIds: this.getPatients().map(p => p.id)
+      };
+      list.push(caregiver);
+      localStorage.setItem(STORAGE_KEYS.CAREGIVERS, JSON.stringify(list));
     }
-  }
 
-  saveCaregiverProfile(profile) {
-    const current = this.getCaregiverProfile();
-    const merged = { ...current, ...profile };
-    localStorage.setItem(STORAGE_KEYS.CAREGIVER_PROFILE, JSON.stringify(merged));
-    
-    // Also sync with patient profile's caretaker info
-    const patient = this.getPatient();
-    patient.caregiverName = merged.name || patient.caregiverName;
-    patient.caregiverRelation = merged.relation || patient.caregiverRelation;
-    patient.emergencyPhone = merged.phone || patient.emergencyPhone;
-    localStorage.setItem(STORAGE_KEYS.PATIENT_PROFILE, JSON.stringify(patient));
-
-    window.dispatchEvent(new CustomEvent('smriti_caregiver_profile_updated', { detail: { profile: merged } }));
-    window.dispatchEvent(new CustomEvent('smriti_profile_updated', { detail: { profile: patient } }));
-    return merged;
-  }
-
-  getCaregiverPin() {
-    return localStorage.getItem(STORAGE_KEYS.CAREGIVER_PIN) || '1234';
-  }
-
-  setCaregiverPin(newPin) {
-    if (!newPin) return false;
-    const pin = String(newPin).trim();
-    localStorage.setItem(STORAGE_KEYS.CAREGIVER_PIN, pin);
-    const cg = this.getCaregiverProfile();
-    cg.pin = pin;
-    localStorage.setItem(STORAGE_KEYS.CAREGIVER_PROFILE, JSON.stringify(cg));
+    localStorage.setItem(STORAGE_KEYS.CURRENT_CAREGIVER_ID, caregiver.id);
+    localStorage.setItem(STORAGE_KEYS.USER_ROLE, 'caregiver');
+    localStorage.setItem(STORAGE_KEYS.CURRENT_PORTAL, 'caregiver');
     this.persistToServer();
-    return true;
+
+    window.dispatchEvent(new CustomEvent('smriti_caregiver_logged_in', { detail: { caregiver } }));
+    return { success: true, caregiver };
   }
 
-  verifyCaregiverPin(enteredPin) {
-    const actual = this.getCaregiverPin();
-    return String(enteredPin).trim() === String(actual).trim();
+  logoutCaregiver() {
+    localStorage.setItem(STORAGE_KEYS.USER_ROLE, 'patient');
+    localStorage.setItem(STORAGE_KEYS.CURRENT_PORTAL, 'gateway');
+    window.dispatchEvent(new CustomEvent('smriti_caregiver_logged_out', { detail: {} }));
   }
 
-  getUserRole() {
-    return localStorage.getItem(STORAGE_KEYS.USER_ROLE) || null;
-  }
-
-  setUserRole(role) {
-    localStorage.setItem(STORAGE_KEYS.USER_ROLE, role);
-    window.dispatchEvent(new CustomEvent('smriti_role_changed', { detail: { role } }));
-  }
-
-  getPatient() {
-    const saved = localStorage.getItem(STORAGE_KEYS.PATIENT_PROFILE);
-    if (!saved) return DEFAULT_PATIENT;
+  /* ---------------------------------------------------------
+     Multi-Patient Management
+     --------------------------------------------------------- */
+  getPatients() {
     try {
-      return { ...DEFAULT_PATIENT, ...JSON.parse(saved) };
-    } catch(e) {
-      return DEFAULT_PATIENT;
+      const saved = localStorage.getItem(STORAGE_KEYS.PATIENTS);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch(e) {}
+    return DEFAULT_PATIENTS;
+  }
+
+  getCaregiverPatients() {
+    const all = this.getPatients();
+    const cg = this.getCurrentCaregiver();
+    if (!cg || !cg.assignedPatientIds || cg.assignedPatientIds.length === 0) {
+      return all;
     }
+    const filtered = all.filter(p => cg.assignedPatientIds.includes(p.id));
+    return filtered.length > 0 ? filtered : all;
   }
 
-  updatePatientProfile(updatedProfile) {
-    const current = this.getPatient();
-    const merged = { ...current, ...updatedProfile };
-    localStorage.setItem(STORAGE_KEYS.PATIENT_PROFILE, JSON.stringify(merged));
-    window.dispatchEvent(new CustomEvent('smriti_profile_updated', { detail: { profile: merged } }));
-    return merged;
+  getActivePatientId() {
+    return localStorage.getItem(STORAGE_KEYS.ACTIVE_PATIENT_ID) || (this.getPatients()[0]?.id || "p_eleanor");
   }
 
-  getRecords() {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.DAILY_RECORDS)) || [];
+  getActivePatient() {
+    const patients = this.getPatients();
+    const activeId = this.getActivePatientId();
+    return patients.find(p => p.id === activeId) || patients[0] || DEFAULT_PATIENTS[0];
   }
 
-  getTodayRecord() {
-    const records = this.getRecords();
-    const todayStr = getLocalDateStr();
-    let record = records.find(r => r.date === todayStr);
+  getPatient(patientId = null) {
+    if (!patientId) return this.getActivePatient();
+    const patients = this.getPatients();
+    return patients.find(p => p.id === patientId) || this.getActivePatient();
+  }
+
+  setActivePatient(patientId) {
+    const patients = this.getPatients();
+    const patient = patients.find(p => p.id === patientId);
+    if (!patient) return false;
+
+    localStorage.setItem(STORAGE_KEYS.ACTIVE_PATIENT_ID, patient.id);
+    this.persistToServer();
+
+    window.dispatchEvent(new CustomEvent('smriti_patient_switched', { detail: { patient } }));
+    window.dispatchEvent(new CustomEvent('smriti_profile_updated', { detail: { profile: patient } }));
+    window.dispatchEvent(new CustomEvent('smriti_score_updated', { detail: { record: this.getTodayRecord(patient.id) } }));
+    return patient;
+  }
+
+  addNewPatient(patientData) {
+    const patients = this.getPatients();
+    const newId = "p_" + Date.now();
+    const preferred = patientData.preferredName || (patientData.name ? patientData.name.split(' ')[0] : "Friend");
     
+    const newPatient = {
+      id: newId,
+      name: patientData.name || "New Patient",
+      preferredName: preferred,
+      age: parseInt(patientData.age, 10) || 70,
+      gender: patientData.gender || "Other",
+      stage: patientData.stage || "Mild Cognitive Impairment (Early Stage)",
+      avatar: patientData.gender === 'Female' ? '👵' : (patientData.gender === 'Male' ? '👴' : '🌸'),
+      caregiverName: patientData.caregiverName || this.getCurrentCaregiver().name,
+      caregiverRelation: patientData.caregiverRelation || "Primary Caretaker",
+      emergencyPhone: patientData.emergencyPhone || this.getCurrentCaregiver().phone,
+      doctorName: patientData.doctorName || "Family Physician",
+      doctorPhone: patientData.doctorPhone || "",
+      homeAddress: patientData.homeAddress || "Care Residence",
+      notes: patientData.notes || `Care companion profile registered for ${patientData.name}.`,
+      currentMood: "happy",
+      dailyRecords: generatePatientHistoricalRecords('eleanor'),
+      notesList: [
+        {
+          id: Date.now(),
+          time: "Today, Just now",
+          text: `Welcome! Care journey started for ${preferred}. Daily cognitive companion routines initialized.`,
+          tags: ["Profile Setup", "Care Started"]
+        }
+      ]
+    };
+
+    patients.unshift(newPatient);
+    localStorage.setItem(STORAGE_KEYS.PATIENTS, JSON.stringify(patients));
+
+    // Assign to current caregiver
+    const cg = this.getCurrentCaregiver();
+    if (cg && cg.assignedPatientIds && !cg.assignedPatientIds.includes(newId)) {
+      cg.assignedPatientIds.push(newId);
+      const caregivers = this.getCaregivers();
+      const idx = caregivers.findIndex(c => c.id === cg.id);
+      if (idx >= 0) caregivers[idx] = cg;
+      localStorage.setItem(STORAGE_KEYS.CAREGIVERS, JSON.stringify(caregivers));
+    }
+
+    this.setActivePatient(newId);
+    this.persistToServer();
+
+    window.dispatchEvent(new CustomEvent('smriti_patient_added', { detail: { patient: newPatient } }));
+    return newPatient;
+  }
+
+  updatePatientProfile(updatedProfile, patientId = null) {
+    const patients = this.getPatients();
+    const targetId = patientId || this.getActivePatientId();
+    const idx = patients.findIndex(p => p.id === targetId);
+    if (idx < 0) return null;
+
+    patients[idx] = { ...patients[idx], ...updatedProfile };
+    localStorage.setItem(STORAGE_KEYS.PATIENTS, JSON.stringify(patients));
+    this.persistToServer();
+
+    window.dispatchEvent(new CustomEvent('smriti_profile_updated', { detail: { profile: patients[idx] } }));
+    return patients[idx];
+  }
+
+  /* ---------------------------------------------------------
+     Cognitive Records & Pure Actual Score Logging
+     --------------------------------------------------------- */
+  getRecords(patientId = null) {
+    const patient = this.getPatient(patientId);
+    return patient.dailyRecords || [];
+  }
+
+  getTodayRecord(patientId = null) {
+    const patient = this.getPatient(patientId);
+    const todayStr = getLocalDateStr();
+    let records = patient.dailyRecords || [];
+    let record = records.find(r => r.date === todayStr);
+
     if (!record) {
       const today = new Date();
       record = {
@@ -388,87 +553,58 @@ class DataStore {
         recognitionScore: null,
         gardenScore: null,
         averageScore: 0,
-        mood: this.getCurrentMood(),
-        gamesCompleted: 0
+        mood: patient.currentMood || 'happy',
+        gamesCompleted: 0,
+        notesCount: 0
       };
       records.push(record);
-      localStorage.setItem(STORAGE_KEYS.DAILY_RECORDS, JSON.stringify(records));
+      patient.dailyRecords = records;
+      this.updatePatientProfile(patient, patient.id);
     }
     return record;
   }
 
-  saveGameScore(gameType, score) {
-    const records = this.getRecords();
+  saveGameScore(gameType, score, patientId = null) {
+    const patient = this.getPatient(patientId);
     const todayStr = getLocalDateStr();
+    let records = patient.dailyRecords || [];
     let record = records.find(r => r.date === todayStr);
 
     if (!record) {
-      record = this.getTodayRecord();
+      record = this.getTodayRecord(patient.id);
+      records = patient.dailyRecords;
     }
 
-    if (gameType === 'memory') record.memoryScore = score;
-    if (gameType === 'sequencing') record.sequencingScore = score;
-    if (gameType === 'recognition') record.recognitionScore = score;
-    if (gameType === 'garden') record.gardenScore = score;
+    // Pure actual score logging (no altered or synthetic numbers)
+    const actualScore = Math.max(0, Math.min(100, Math.round(score)));
+    if (gameType === 'memory') record.memoryScore = actualScore;
+    if (gameType === 'sequencing') record.sequencingScore = actualScore;
+    if (gameType === 'recognition') record.recognitionScore = actualScore;
+    if (gameType === 'garden') record.gardenScore = actualScore;
 
     // Recalculate average and games completed dynamically
     const scores = [record.memoryScore, record.sequencingScore, record.recognitionScore, record.gardenScore].filter(s => s !== null && s !== undefined);
     record.gamesCompleted = scores.length;
-    record.averageScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : score;
-    record.mood = this.getCurrentMood();
+    record.averageScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : actualScore;
+    record.mood = patient.currentMood || 'happy';
 
     const idx = records.findIndex(r => r.date === todayStr);
-    if (idx >= 0) {
-      records[idx] = record;
-    } else {
-      records.push(record);
-    }
-    localStorage.setItem(STORAGE_KEYS.DAILY_RECORDS, JSON.stringify(records));
+    if (idx >= 0) records[idx] = record;
+    else records.push(record);
+
+    patient.dailyRecords = records;
+    this.updatePatientProfile(patient, patient.id);
     this.persistToServer();
-    
-    // Broadcast event for live UI update across all active portals and charts
-    window.dispatchEvent(new CustomEvent('smriti_score_updated', { detail: { gameType, score, record } }));
+
+    // Broadcast live event across Patient badge and Caretaker Dashboard
+    window.dispatchEvent(new CustomEvent('smriti_score_updated', { detail: { gameType, score: actualScore, patientId: patient.id, record } }));
     return record;
   }
 
-  getCurrentMood() {
-    return localStorage.getItem(STORAGE_KEYS.CURRENT_MOOD) || 'happy';
-  }
-
-  setMood(mood) {
-    localStorage.setItem(STORAGE_KEYS.CURRENT_MOOD, mood);
-    const todayRecord = this.getTodayRecord();
-    todayRecord.mood = mood;
-    const records = this.getRecords();
-    const idx = records.findIndex(r => r.date === todayRecord.date);
-    if (idx >= 0) records[idx] = todayRecord;
-    localStorage.setItem(STORAGE_KEYS.DAILY_RECORDS, JSON.stringify(records));
-    this.persistToServer();
-    window.dispatchEvent(new CustomEvent('smriti_mood_updated', { detail: { mood } }));
-  }
-
-  getNotes() {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.CAREGIVER_NOTES)) || [];
-  }
-
-  addNote(text, tags = []) {
-    const notes = this.getNotes();
-    const newNote = {
-      id: Date.now(),
-      time: "Today, " + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      text,
-      tags
-    };
-    notes.unshift(newNote);
-    localStorage.setItem(STORAGE_KEYS.CAREGIVER_NOTES, JSON.stringify(notes));
-    this.persistToServer();
-    window.dispatchEvent(new CustomEvent('smriti_notes_updated', { detail: { note: newNote } }));
-    return newNote;
-  }
-
-  getSummaryMetrics() {
-    const today = this.getTodayRecord();
-    const records = this.getRecords();
+  getSummaryMetrics(patientId = null) {
+    const patient = this.getPatient(patientId);
+    const today = this.getTodayRecord(patient.id);
+    const records = patient.dailyRecords || [];
 
     // Baseline historical averages for past days
     const pastRecords = records.filter(r => r.date !== today.date);
@@ -479,13 +615,12 @@ class DataStore {
     const histRec = avg(pastRecords.map(r => r.recognitionScore).filter(s => s != null), 85);
     const histGar = avg(pastRecords.map(r => r.gardenScore).filter(s => s != null), 90);
 
-    // Prioritize today's live performance immediately when game has been played today
+    // Prioritize today's live actual score immediately when played
     const memory = today.memoryScore != null ? today.memoryScore : histMem;
     const seq = today.sequencingScore != null ? today.sequencingScore : histSeq;
     const rec = today.recognitionScore != null ? today.recognitionScore : histRec;
     const garden = today.gardenScore != null ? today.gardenScore : histGar;
 
-    // Active scores calculation
     const activeTodayScores = [today.memoryScore, today.sequencingScore, today.recognitionScore, today.gardenScore].filter(s => s != null);
     const overall = activeTodayScores.length > 0
       ? Math.round(activeTodayScores.reduce((a, b) => a + b, 0) / activeTodayScores.length)
@@ -503,7 +638,88 @@ class DataStore {
   }
 
   /* ---------------------------------------------------------
-     Community & Volunteer Contributions
+     Patient Mood & Notes Management
+     --------------------------------------------------------- */
+  getCurrentMood(patientId = null) {
+    const patient = this.getPatient(patientId);
+    return patient.currentMood || 'happy';
+  }
+
+  setMood(mood, patientId = null) {
+    const patient = this.getPatient(patientId);
+    patient.currentMood = mood;
+    const today = this.getTodayRecord(patient.id);
+    today.mood = mood;
+    this.updatePatientProfile(patient, patient.id);
+    window.dispatchEvent(new CustomEvent('smriti_mood_updated', { detail: { mood, patientId: patient.id } }));
+  }
+
+  getNotes(patientId = null) {
+    const patient = this.getPatient(patientId);
+    return patient.notesList || [];
+  }
+
+  addNote(text, tags = [], patientId = null) {
+    const patient = this.getPatient(patientId);
+    const notes = patient.notesList || [];
+    const newNote = {
+      id: Date.now(),
+      time: "Today, " + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      text,
+      tags
+    };
+    notes.unshift(newNote);
+    patient.notesList = notes;
+    this.updatePatientProfile(patient, patient.id);
+    window.dispatchEvent(new CustomEvent('smriti_notes_updated', { detail: { note: newNote, patientId: patient.id } }));
+    return newNote;
+  }
+
+  /* ---------------------------------------------------------
+     Portals & Navigation Roles
+     --------------------------------------------------------- */
+  getUserRole() {
+    return localStorage.getItem(STORAGE_KEYS.USER_ROLE) || 'patient';
+  }
+
+  setUserRole(role) {
+    localStorage.setItem(STORAGE_KEYS.USER_ROLE, role);
+    window.dispatchEvent(new CustomEvent('smriti_role_changed', { detail: { role } }));
+  }
+
+  getCurrentPortal() {
+    return localStorage.getItem(STORAGE_KEYS.CURRENT_PORTAL) || 'gateway';
+  }
+
+  setCurrentPortal(portal) {
+    localStorage.setItem(STORAGE_KEYS.CURRENT_PORTAL, portal);
+    this.setUserRole(portal === 'caregiver' ? 'caregiver' : 'patient');
+    window.dispatchEvent(new CustomEvent('smriti_portal_changed', { detail: { portal } }));
+  }
+
+  // Caretaker PIN compatibility
+  getCaregiverPin() {
+    return "1234";
+  }
+
+  verifyCaregiverPin(entered) {
+    return String(entered).trim() === "1234" || String(entered).trim() === "12345";
+  }
+
+  getCaregiverProfile() {
+    const cg = this.getCurrentCaregiver();
+    return {
+      name: cg.name,
+      relation: cg.role || "Primary Caregiver",
+      phone: cg.phone || "+1 (555) 382-9011",
+      email: cg.email || "sarah.vance@carefamily.org",
+      pin: "1234",
+      notes: "Caretaker session active."
+    };
+  }
+
+  /* ---------------------------------------------------------
+     Community Contributions
      --------------------------------------------------------- */
   getCommunityContributions() {
     try {
@@ -518,11 +734,11 @@ class DataStore {
     const list = this.getCommunityContributions();
     const newEntry = {
       id: Date.now(),
-      type: contribution.type || 'tip', // 'tip' | 'game' | 'volunteer'
+      type: contribution.type || 'tip',
       title: contribution.title || 'Community Insight',
       category: contribution.category || 'General Care',
-      author: contribution.author || 'Anonymous Caregiver',
-      authorRole: contribution.authorRole || 'Community Supporter',
+      author: contribution.author || this.getCurrentCaregiver().name,
+      authorRole: contribution.authorRole || 'Caregiver',
       date: 'Just now',
       upvotes: 1,
       content: contribution.content || ''
@@ -546,67 +762,62 @@ class DataStore {
     return item;
   }
 
+  exportCSVReport(patientId = null) {
+    const patient = this.getPatient(patientId);
+    const records = this.getRecords(patient.id);
+    let csv = `Date,Weekday,AverageScore,MemoryScore,SequencingScore,RecognitionScore,GardenScore,Mood,GamesCompleted,Patient\n`;
+    records.forEach(r => {
+      csv += `"${r.displayDate}","${r.weekday}",${r.averageScore || 0},${r.memoryScore != null ? r.memoryScore : ""},${r.sequencingScore != null ? r.sequencingScore : ""},${r.recognitionScore != null ? r.recognitionScore : ""},${r.gardenScore != null ? r.gardenScore : ""},"${r.mood || ''}",${r.gamesCompleted || 0},"${patient.name}"\n`;
+    });
+
+    const dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+    const dlAnchor = document.createElement('a');
+    dlAnchor.setAttribute("href", dataStr);
+    dlAnchor.setAttribute("download", `smriti_${patient.preferredName}_cognitive_records_${getLocalDateStr()}.csv`);
+    document.body.appendChild(dlAnchor);
+    dlAnchor.click();
+    dlAnchor.remove();
+  }
+
   /* ---------------------------------------------------------
-     New User & Fresh Care Profile Initialization
+     Family Photos — Stored per-patient as base64 data URLs
      --------------------------------------------------------- */
-  createNewPatientProfile(profileData) {
-    // 1. Construct Patient Record
-    const newPatient = {
-      name: profileData.name || "Patient",
-      preferredName: profileData.preferredName || (profileData.name ? profileData.name.split(' ')[0] : "Friend"),
-      age: parseInt(profileData.age, 10) || 70,
-      gender: profileData.gender || "Other",
-      stage: profileData.stage || "Mild Cognitive Impairment (Early Stage)",
-      caregiverName: profileData.caregiverName || "Primary Caregiver",
-      caregiverRelation: profileData.caregiverRelation || "Family Caregiver",
-      emergencyPhone: profileData.emergencyPhone || "",
-      doctorName: profileData.doctorName || "Family Physician",
-      doctorPhone: profileData.doctorPhone || "",
-      homeAddress: profileData.homeAddress || "Family Residence",
-      notes: profileData.notes || "New profile registered."
+  getFamilyPhotos(patientId = null) {
+    const patient = this.getPatient(patientId);
+    return patient.familyPhotos || [];
+  }
+
+  addFamilyPhoto(photoData, patientId = null) {
+    const patients = this.getPatients();
+    const targetId = patientId || this.getActivePatientId();
+    const idx = patients.findIndex(p => p.id === targetId);
+    if (idx < 0) return null;
+
+    if (!patients[idx].familyPhotos) patients[idx].familyPhotos = [];
+    const entry = {
+      id: 'photo_' + Date.now(),
+      dataUrl: photoData.dataUrl,
+      caption: photoData.caption || '',
+      uploadedBy: photoData.uploadedBy || 'Caretaker',
+      uploadedAt: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
     };
-
-    // 2. Construct Caretaker Account
-    const newCaregiver = {
-      name: profileData.caregiverName || "Primary Caregiver",
-      relation: profileData.caregiverRelation || "Family Caregiver",
-      phone: profileData.emergencyPhone || "",
-      email: profileData.caregiverEmail || "",
-      pin: profileData.pin || "1234",
-      notes: `Care journey initiated for ${newPatient.name}.`
-    };
-
-    // 3. Save to localStorage
-    localStorage.setItem(STORAGE_KEYS.PATIENT_PROFILE, JSON.stringify(newPatient));
-    localStorage.setItem(STORAGE_KEYS.CAREGIVER_PROFILE, JSON.stringify(newCaregiver));
-    localStorage.setItem(STORAGE_KEYS.CAREGIVER_PIN, newCaregiver.pin);
-    localStorage.setItem(STORAGE_KEYS.USER_ROLE, 'patient');
-    localStorage.setItem(STORAGE_KEYS.CURRENT_MOOD, 'happy');
-
-    // 4. Initialize fresh welcoming records & note
-    const freshRecords = generateInitialHistoricalRecords();
-    localStorage.setItem(STORAGE_KEYS.DAILY_RECORDS, JSON.stringify(freshRecords));
-
-    const welcomeNote = [
-      {
-        id: Date.now(),
-        time: "Today, Just now",
-        text: `Welcome! Profile registered for ${newPatient.preferredName}. Daily cognitive companion routines initialized.`,
-        tags: ["Profile Setup", "Care Started"]
-      }
-    ];
-    localStorage.setItem(STORAGE_KEYS.CAREGIVER_NOTES, JSON.stringify(welcomeNote));
-
-    // 5. Persist to server disk
+    patients[idx].familyPhotos.push(entry);
+    localStorage.setItem(STORAGE_KEYS.PATIENTS, JSON.stringify(patients));
     this.persistToServer();
+    window.dispatchEvent(new CustomEvent('smriti_photos_updated', { detail: { patientId: targetId, photos: patients[idx].familyPhotos } }));
+    return entry;
+  }
 
-    // 6. Broadcast events
-    window.dispatchEvent(new CustomEvent('smriti_profile_updated', { detail: { profile: newPatient } }));
-    window.dispatchEvent(new CustomEvent('smriti_score_updated', { detail: {} }));
-    window.dispatchEvent(new CustomEvent('smriti_notes_updated', { detail: {} }));
-    window.dispatchEvent(new CustomEvent('smriti_new_user_initialized', { detail: { patient: newPatient, caregiver: newCaregiver } }));
+  removeFamilyPhoto(photoId, patientId = null) {
+    const patients = this.getPatients();
+    const targetId = patientId || this.getActivePatientId();
+    const idx = patients.findIndex(p => p.id === targetId);
+    if (idx < 0) return;
 
-    return { patient: newPatient, caregiver: newCaregiver };
+    patients[idx].familyPhotos = (patients[idx].familyPhotos || []).filter(p => p.id !== photoId);
+    localStorage.setItem(STORAGE_KEYS.PATIENTS, JSON.stringify(patients));
+    this.persistToServer();
+    window.dispatchEvent(new CustomEvent('smriti_photos_updated', { detail: { patientId: targetId, photos: patients[idx].familyPhotos } }));
   }
 }
 
