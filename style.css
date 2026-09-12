@@ -114,9 +114,9 @@ body.caregiver-mode {
 /* Top App Header & Switcher */
 .app-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 12px 24px;
+  padding: 16px 28px;
   background: var(--bg-card);
   backdrop-filter: blur(14px);
   border-bottom: 1.5px solid var(--border);
@@ -125,7 +125,14 @@ body.caregiver-mode {
   z-index: 100;
   box-shadow: var(--shadow-sm);
   transition: var(--transition);
-  gap: 16px;
+  gap: 24px;
+}
+
+.brand-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
 }
 
 .brand-area {
@@ -166,12 +173,40 @@ body.caregiver-mode {
   font-weight: 500;
 }
 
-.header-controls {
+/* Action Buttons Stacked Vertically Below Heart Logo */
+.brand-actions-vertical {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 240px;
+  margin-top: 4px;
+}
+
+.brand-actions-vertical .header-action-btn {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 9px 16px;
+  border-radius: var(--radius-btn);
+}
+
+.brand-actions-vertical .lang-switch-group {
+  width: 100%;
+  display: flex;
+}
+
+.brand-actions-vertical .lang-switch-group .lang-btn {
+  flex: 1;
+  text-align: center;
+}
+
+/* Centered Portal Switcher Container */
+.header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 6px;
 }
 
 /* SVG Icon Helper */
