@@ -530,6 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function switchPortal(portal) {
+    if (window.smritiSpeech) window.smritiSpeech.stopAllAudio();
     state.currentPortal = portal;
     if (portal === 'caregiver') {
       document.body.classList.add('caregiver-mode');
@@ -619,11 +620,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function launchGame(gameType) {
+    if (window.smritiSpeech) window.smritiSpeech.stopAllAudio();
     gameModal.classList.add('active');
     gameContainer.innerHTML = '';
 
     const handleComplete = (score) => {
       refreshPatientStatus();
+      refreshCaregiverDashboard();
       showToast(`Game completed! Score: ${score}% logged.`);
     };
 
@@ -652,17 +655,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function closeGameModal() {
+    if (window.smritiSpeech) window.smritiSpeech.stopAllAudio();
     gameModal.classList.remove('active');
     gameContainer.innerHTML = '';
     state.activeGame = null;
     refreshPatientStatus();
-    if (state.currentPortal === 'caregiver') {
-      refreshCaregiverDashboard();
-    }
+    refreshCaregiverDashboard();
   }
 
   function refreshPatientStatus() {
     const today = window.smritiData.getTodayRecord();
+    const isHi = window.smritiI18n && window.smritiI18n.getLanguage() === 'hi';
     const pills = {
       memory: document.getElementById('pill-game-memory'),
       sequencing: document.getElementById('pill-game-sequencing'),
@@ -670,22 +673,21 @@ document.addEventListener('DOMContentLoaded', () => {
       garden: document.getElementById('pill-game-garden')
     };
 
-    if (pills.memory && today.memoryScore !== null && today.memoryScore !== undefined) {
-      pills.memory.textContent = `Completed (${today.memoryScore}%)`;
-      pills.memory.classList.add('done');
-    }
-    if (pills.sequencing && today.sequencingScore !== null && today.sequencingScore !== undefined) {
-      pills.sequencing.textContent = `Completed (${today.sequencingScore}%)`;
-      pills.sequencing.classList.add('done');
-    }
-    if (pills.recognition && today.recognitionScore !== null && today.recognitionScore !== undefined) {
-      pills.recognition.textContent = `Completed (${today.recognitionScore}%)`;
-      pills.recognition.classList.add('done');
-    }
-    if (pills.garden && today.gardenScore !== null && today.gardenScore !== undefined) {
-      pills.garden.textContent = `Completed (${today.gardenScore}%)`;
-      pills.garden.classList.add('done');
-    }
+    const updatePill = (pill, score) => {
+      if (!pill) return;
+      if (score !== null && score !== undefined) {
+        pill.textContent = isHi ? `पूर्ण (${score}%)` : `Completed (${score}%)`;
+        pill.classList.add('done');
+      } else {
+        pill.textContent = isHi ? 'शुरू करें' : 'Ready to Play';
+        pill.classList.remove('done');
+      }
+    };
+
+    updatePill(pills.memory, today.memoryScore);
+    updatePill(pills.sequencing, today.sequencingScore);
+    updatePill(pills.recognition, today.recognitionScore);
+    updatePill(pills.garden, today.gardenScore);
   }
 
   /* ---------------------------------------------------------
@@ -840,6 +842,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const openChat = () => {
+      if (window.smritiSpeech) window.smritiSpeech.stopAllAudio();
       syncChatbotUI();
       renderMessages();
       chatbotModal.classList.add('active');
@@ -847,6 +850,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const closeChat = () => {
+      if (window.smritiSpeech) window.smritiSpeech.stopAllAudio();
       chatbotModal.classList.remove('active');
     };
 
@@ -1833,9 +1837,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function listenForDataUpdates() {
     window.addEventListener('smriti_score_updated', () => {
       refreshPatientStatus();
-      if (state.currentPortal === 'caregiver') {
-        refreshCaregiverDashboard();
-      }
+      refreshCaregiverDashboard();
     });
 
     window.addEventListener('smriti_mood_updated', () => {
